@@ -3,6 +3,20 @@
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const state = { overview: null, detail: null, userId: null, tab: 'accounts' };
 
+  function detailPane(tab = state.tab) {
+    return $('#admin-tab-' + tab);
+  }
+
+  function updateDetailHash() {
+    if (state.userId) history.replaceState(null, '', '/admin#user=' + encodeURIComponent(state.userId) + '&tab=' + encodeURIComponent(state.tab));
+  }
+
+  function activateDetailTab(tab) {
+    state.tab = tab;
+    $$('.admin-tab').forEach((t) => t.classList.toggle('active', t.dataset.tab === tab));
+    $$('.admin-tab-pane').forEach((p) => p.classList.toggle('active', p.id === 'admin-tab-' + tab));
+  }
+
   function toast(msg, err = false) {
     const t = $('#toast');
     t.textContent = msg;
@@ -113,6 +127,12 @@
       $('#admin-me-name').textContent = me.user.email || ('@' + me.user.username);
       $('#admin-me-avatar').textContent = (me.user.email || me.user.username)[0].toUpperCase();
       await loadOverview();
+      const params = new URLSearchParams(location.hash.slice(1));
+      const userId = params.get('user');
+      if (userId) {
+        state.tab = params.get('tab') || 'accounts';
+        await openUser(userId, false);
+      }
     } catch (e) {
       if (e.message === 'not_admin') location.href = '/app';
     }
@@ -230,8 +250,10 @@
   }
 
   // ---------- User detail ----------
-  async function openUser(id) {
+  async function openUser(id, updateHash = true) {
     state.userId = id;
+    if (updateHash) updateDetailHash();
+    activateDetailTab(state.tab);
     go('detail');
     $('#admin-detail-title').textContent = 'Loading user...';
     $('#admin-detail-actions').innerHTML = '';
@@ -241,7 +263,7 @@
       renderDetail();
     } catch (e) {
       $('#admin-detail-title').textContent = 'Error loading user';
-      const pane = $('#' + state.tab + '-tab-pane') || $('#admin-tab-accounts');
+      const pane = detailPane() || $('#admin-tab-accounts');
       if (pane) pane.innerHTML = '<div class="empty">Could not load this user.<br><span style="font-size:12px;color:var(--red)">' + esc(e.message || e) + '</span></div>';
       toast('Failed to load user: ' + (e.message || e), true);
       console.error('[admin] openUser failed:', e);
@@ -293,10 +315,8 @@
 
   // ---------- Tabs ----------
   $$('.admin-tab').forEach((t) => t.addEventListener('click', () => {
-    $$('.admin-tab').forEach((x) => x.classList.toggle('active', x === t));
-    $$('.admin-tab-pane').forEach((p) => p.classList.remove('active'));
-    state.tab = t.dataset.tab;
-    $('#' + state.tab + '-tab-pane')?.classList.add('active');
+    activateDetailTab(t.dataset.tab);
+    updateDetailHash();
     renderTab();
   }));
 
@@ -313,7 +333,7 @@
         case 'subscription': renderSubscription(); break;
       }
     } catch (e) {
-      const pane = $('#' + state.tab + '-tab-pane');
+      const pane = detailPane();
       if (pane) pane.innerHTML = '<div class="empty">Something went wrong loading this tab.<br><span style="font-size:12px;color:var(--red)">' + esc(e.message || e) + '</span></div>';
       console.error('[admin] render tab "' + state.tab + '" failed:', e);
     }
@@ -589,7 +609,12 @@
   });
 
   $('#admin-refresh').addEventListener('click', async () => { await loadOverview(); toast('Refreshed.'); });
-  $('#admin-back').addEventListener('click', () => go('users'));
+  $('#admin-back').addEventListener('click', () => {
+    state.userId = null;
+    state.detail = null;
+    history.replaceState(null, '', '/admin');
+    go('users');
+  });
   $('#admin-user-search').addEventListener('input', renderUsersTable);
   $('#admin-user-search-2').addEventListener('input', renderUserCards);
   $('#admin-acc-search').addEventListener('input', renderAllAccounts);
