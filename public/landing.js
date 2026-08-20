@@ -43,9 +43,9 @@
   $$('.reveal').forEach((el) => io.observe(el));
 
   // Animated contribution grid in the hero.
-  // It starts empty and gradually fills to a healthy green grid, then resets.
+  // It starts empty, fills completely to a healthy green grid, then resets.
   const heat = $('#heat');
-  const COLS = 26, ROWS = 7;
+  const COLS = 24, ROWS = 7;
   const levels = ['', 'l1', 'l2', 'l3', 'l4'];
   const cells = [];
   for (let c = 0; c < COLS; c++) {
@@ -59,45 +59,28 @@
     }
     heat.appendChild(col);
   }
-  const dayLabel = $('#vis-day-label');
-  // Weight cells so some days stay light and a few are intense, like real use.
-  const weights = cells.map(() => [0, 0, 0, 1, 1, 2, 3][Math.floor(Math.random() * 7)]);
-  let lit = 0;
+  // Every cell gets a level so the final grid is fully green and balanced.
+  const weights = cells.map(() => [1, 1, 2, 2, 3, 4][Math.floor(Math.random() * 6)]);
   function animateGrid() {
-    lit = 0;
-    cells.forEach((cell, i) => {
+    cells.forEach((cell) => {
       cell.classList.remove('l1', 'l2', 'l3', 'l4', 'pop');
-      if (weights[i]) cell.style.opacity = '0';
     });
-    if (dayLabel) dayLabel.textContent = 'Week 1 · getting started';
     let idx = 0;
     const tick = () => {
-      const step = Math.max(1, Math.round(cells.length / 46));
+      const step = Math.max(1, Math.round(cells.length / 40));
       for (let k = 0; k < step && idx < cells.length; k++, idx++) {
         const cell = cells[idx];
-        const w = weights[idx];
-        if (w) {
-          cell.classList.add(levels[w], 'pop');
-          cell.style.opacity = '1';
-          lit++;
-        }
-      }
-      const week = Math.min(8, 1 + Math.floor(idx / (cells.length / 8)));
-      if (dayLabel) {
-        dayLabel.textContent = week >= 8 ? 'A healthy, active grid' : 'Week ' + week + ' · filling up';
+        cell.classList.add(levels[weights[idx]], 'pop');
       }
       if (idx < cells.length) {
-        setTimeout(tick, 34);
+        setTimeout(tick, 30);
       } else {
-        setTimeout(() => {
-          if (dayLabel) dayLabel.textContent = 'Never misses a day';
-          setTimeout(animateGrid, 2600);
-        }, 700);
+        setTimeout(animateGrid, 2800);
       }
     };
     tick();
   }
-  setTimeout(animateGrid, 400);
+  setTimeout(animateGrid, 300);
 
   // Signed-in users should see a "dashboard" button instead of "Sign in".
   fetch('/api/auth/me').then((r) => r.json()).then((me) => {

@@ -13,11 +13,6 @@
   <link rel="stylesheet" href="/landing.css">
 </head>
 <body>
-  <div class="bg-glow" aria-hidden="true">
-    <div class="glow glow-1"></div>
-    <div class="glow glow-2"></div>
-    <div class="glow glow-3"></div>
-  </div>
 
   <!-- Navbar -->
   <nav class="nav" id="nav">
@@ -50,52 +45,42 @@
     <a class="btn btn-primary" id="mob-cta" href="/app">Get started</a>
   </div>
 
+  <!-- Announcement ticker -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <div class="ticker-group">
+        <span class="tk"><b>30 days free</b> to try</span>
+        <span class="tk">Keep your GitHub <b>green</b> automatically</span>
+        <span class="tk">No credit card required</span>
+        <span class="tk">Pause anytime</span>
+        <span class="tk">Realistic, human-like commits</span>
+      </div>
+      <div class="ticker-group">
+        <span class="tk"><b>30 days free</b> to try</span>
+        <span class="tk">Keep your GitHub <b>green</b> automatically</span>
+        <span class="tk">No credit card required</span>
+        <span class="tk">Pause anytime</span>
+        <span class="tk">Realistic, human-like commits</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Hero -->
   <header class="hero">
-    <div class="trial-strip reveal">
-      <span class="trial-pulse"></span>
-      <span class="trial-text"><b>30 days</b> completely free to try</span>
-      <span class="trial-arrow">→</span>
-    </div>
-
     <div class="hero-inner">
       <div class="hero-copy">
-        <h1 class="reveal d1">Keep your GitHub <span class="grad-text-green">active</span>,<br>while you <span class="grad-text">build</span>.</h1>
+        <h1 class="reveal d1">Keep your GitHub <span class="acc">active</span>,<br>automatically.</h1>
         <p class="sub reveal d2">GitGreen plans and runs realistic activity on your GitHub each day, so your profile stays green while you focus on real work.</p>
         <div class="hero-cta reveal d2">
-          <a class="btn btn-green btn-lg" href="/app">Get started free →</a>
+          <a class="btn btn-primary btn-lg" href="/app">Get started free</a>
           <a class="btn btn-ghost btn-lg" href="#how">How it works</a>
-        </div>
-        <div class="hero-trust reveal d3">
-          <span>✓ No credit card</span>
-          <span>✓ 60-second setup</span>
-          <span>✓ Pause anytime</span>
         </div>
       </div>
 
       <div class="hero-visual reveal d2">
-        <div class="hero-frame" id="hero-frame">
-          <div class="frame-top">
-            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-            <span class="title">github.com/you · contributions</span>
-          </div>
-          <div class="visual-status">
-            <div><span class="status-dot"></span><span>Autopilot running</span></div>
-            <strong id="vis-day-label">Weeks fill automatically</strong>
-          </div>
-          <div class="heat-wrap">
-            <div class="heat-cols" id="heat"></div>
-          </div>
-          <div class="frame-foot">
-            <span class="legend">Less</span>
-            <span class="legend-cell"></span>
-            <span class="legend-cell l1"></span>
-            <span class="legend-cell l2"></span>
-            <span class="legend-cell l3"></span>
-            <span class="legend-cell l4"></span>
-            <span class="legend">More</span>
-          </div>
-        </div>
+        <div class="vis-head">Contribution activity</div>
+        <div class="heat" id="heat"></div>
+        <div class="vis-caption">Filling your grid, one commit at a time</div>
       </div>
     </div>
   </header>
@@ -103,8 +88,8 @@
   <!-- How it works -->
   <section class="section" id="how">
     <div class="section-head reveal">
-      <span class="eyebrow"><span class="dot"></span> How it works</span>
-      <h2 class="section-title">Up and running in <span class="grad-text">three easy steps</span></h2>
+      <span class="eyebrow">How it works</span>
+      <h2 class="section-title">Up and running in three easy steps</h2>
       <p class="section-sub">Connect once. Let the autopilot take care of the rest.</p>
     </div>
     <div class="steps">
@@ -129,8 +114,8 @@
   <!-- Features -->
   <section class="section" id="features">
     <div class="section-head reveal">
-      <span class="eyebrow"><span class="dot"></span> Features</span>
-      <h2 class="section-title">Everything you need to <span class="grad-text">stay consistently active</span></h2>
+      <span class="eyebrow">Features</span>
+      <h2 class="section-title">Everything you need to stay consistently active</h2>
       <p class="section-sub">Purpose-built so your GitHub profile always tells a great story.</p>
     </div>
     <div class="features">
@@ -170,8 +155,8 @@
   <!-- Pricing -->
   <section class="section" id="pricing">
     <div class="section-head reveal">
-      <span class="eyebrow"><span class="dot"></span> Pricing</span>
-      <h2 class="section-title">Simple pricing. <span class="grad-text">Real results.</span></h2>
+      <span class="eyebrow">Pricing</span>
+      <h2 class="section-title">Simple pricing. Real results.</h2>
       <p class="section-sub">Try every core feature completely free for 30 days. Upgrade whenever you want and only pay the difference.</p>
     </div>
 
@@ -193,8 +178,8 @@
   <!-- FAQ -->
   <section class="section" id="faq">
     <div class="section-head reveal">
-      <span class="eyebrow"><span class="dot"></span> FAQ</span>
-      <h2 class="section-title">Questions, <span class="grad-text">answered</span></h2>
+      <span class="eyebrow">FAQ</span>
+      <h2 class="section-title">Questions, answered</h2>
     </div>
     <div class="faq-list reveal">
       <details class="faq">
@@ -219,9 +204,9 @@
   <!-- CTA -->
   <section class="section" id="cta">
     <div class="cta-box reveal">
-      <h2>Ready to keep your grid <span class="grad-text-green">green</span>?</h2>
+      <h2>Ready to keep your grid green?</h2>
       <p>Join GitGreen and let realistic activity keep your profile alive every single day, automatically.</p>
-      <a class="btn btn-green btn-lg" href="/app">Get started, it's free</a>
+      <a class="btn btn-primary btn-lg" href="/app">Get started free</a>
     </div>
   </section>
 
@@ -244,6 +229,6 @@
     <div class="footer-copy">© 2026 GitGreen. Keep your GitHub green, automatically.</div>
   </footer>
 
-  <script src="/landing.js?v=5"></script>
+  <script src="/landing.js?v=6"></script>
 </body>
 </html>

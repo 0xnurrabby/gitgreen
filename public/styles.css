@@ -586,7 +586,7 @@ a.logo-row:hover { text-decoration: none; }
 }
 .pay-link-ic {
   width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--accent), var(--green)); color: #fff; font-size: 24px;
+  background: var(--accent); color: #fff; font-size: 24px;
   box-shadow: 0 8px 22px rgba(91,77,255,.25);
 }
 .pay-link-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
