@@ -80,9 +80,15 @@
 
   // Pricing grid
   fetch('/api/billing/plans').then((r) => r.json()).then((data) => {
-    const plans = data.plans || [];
+    const plans = data.plans && data.plans.length ? data.plans : [
+      { id: 'free', name: 'Free trial', accounts: 1, price: 0, tagline: 'Try the autopilot for 30 days.' },
+      { id: 'starter', name: 'Starter', accounts: 5, price: 3, tagline: 'For one focused GitHub profile.' },
+      { id: 'pro', name: 'Pro', accounts: 10, price: 5, tagline: 'More accounts, same calm workflow.', popular: true },
+      { id: 'pro_plus', name: 'Pro Plus', accounts: 30, price: 10, tagline: 'For a broader developer presence.' },
+      { id: 'max', name: 'Max', accounts: 100, price: 20, tagline: 'Maximum coverage, one dashboard.' }
+    ];
     const grid = $('#pricing-grid');
-    if (!grid || !plans.length) return;
+    if (!grid) return;
     grid.innerHTML = plans.map((p) => {
       const per = p.price > 0 ? '$' + p.price + '<span class="per">/mo</span>' : 'Free';
       const accs = p.accounts === 1 ? '1 account' : p.accounts + ' accounts';
@@ -102,12 +108,10 @@
           '<a class="btn btn-block ' + (p.popular ? 'btn-green' : 'btn-ghost') + '" href="/app">' + (p.id === 'free' ? 'Start free' : 'Get ' + p.name) + '</a>' +
         '</div>';
     }).join('');
-    // Reveal animation for pricing cards
-    const io2 = new IntersectionObserver((entries) => {
-      for (const e of entries) {
-        if (e.isIntersecting) { e.target.classList.add('in'); io2.unobserve(e.target); }
-      }
-    }, { threshold: 0.15 });
-    $$('#pricing-grid .pricing-card').forEach((el) => io2.observe(el));
+    // Cards stay visible even in print/PDF capture and reduced-motion mode.
+    $$('#pricing-grid .pricing-card').forEach((el, i) => {
+      el.classList.add('in');
+      el.style.transitionDelay = (i * 60) + 'ms';
+    });
   }).catch(() => {});
 })();

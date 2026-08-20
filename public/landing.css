@@ -332,7 +332,7 @@ img { max-width: 100%; display: block; }
 .pricing-card {
   position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 22px;
   padding: 28px 22px; display: flex; flex-direction: column; gap: 12px;
-  transition: transform .2s, box-shadow .2s, border-color .2s; opacity: 0; transform: translateY(26px);
+  transition: transform .2s, box-shadow .2s, border-color .2s; opacity: 1; transform: none;
 }
 .pricing-card.in { opacity: 1; transform: none; transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.3,1); }
 .pricing-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
@@ -344,6 +344,14 @@ img { max-width: 100%; display: block; }
 .pricing-note {
   text-align: center; color: var(--dim); font-size: 14px; margin-top: 22px;
 }
+.pricing-card .plan-tag { align-self: flex-start; margin: -8px 0 2px; padding: 5px 9px; border-radius: 999px; background: rgba(46,160,67,.1); color: var(--green-2); font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.pricing-card .plan-name { font-family: var(--display); font-size: 19px; font-weight: 700; }
+.pricing-card .plan-price { font-family: var(--display); font-size: 32px; font-weight: 700; letter-spacing: -.03em; }
+.pricing-card .plan-price .per { color: var(--dim); font-family: var(--font); font-size: 13px; font-weight: 500; margin-left: 3px; }
+.pricing-card .plan-tagline { min-height: 42px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.pricing-card .plan-feats { display: flex; flex: 1; flex-direction: column; gap: 8px; list-style: none; margin: 8px 0 12px; color: var(--muted); font-size: 13px; }
+.pricing-card .plan-feats li::before { content: '✓'; color: var(--green); font-weight: 800; margin-right: 7px; }
+.pricing-card .btn-block { width: 100%; }
 
 /* Responsive */
 @media (max-width: 900px) {

@@ -883,8 +883,13 @@ async function main() {
   });
 
   // ---------- Static ----------
-  // Landing page is the public homepage; the app lives at /app.
-  app.get('/', (req, res) => res.sendFile(path.join(ROOT, 'public', 'landing.html')));
+  // Keep authenticated users in the product instead of showing the public
+  // landing page with a misleading "Sign in" button.
+  app.get('/', (req, res) => {
+    const sid = (req.headers.cookie || '').match(/(?:^|;\s*)sid=([^;]+)/);
+    if (sid && auth.getUserBySession(sid[1])) return res.redirect('/app');
+    res.sendFile(path.join(ROOT, 'public', 'landing.html'));
+  });
   app.get('/app', (req, res) => res.sendFile(path.join(ROOT, 'public', 'index.html')));
   app.get('/admin', (req, res) => res.sendFile(path.join(ROOT, 'public', 'admin.html')));
   app.use(express.static(path.join(ROOT, 'public')));
