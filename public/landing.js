@@ -71,11 +71,10 @@
     setTimeout(() => cell.classList.remove('pop'), 500);
   }, 700);
 
-// If already signed in, show "Open dashboard" instead of sign-in CTAs
+  // Signed-in users should land in the product, not see the public sign-in page.
   fetch('/api/auth/me').then((r) => r.json()).then((me) => {
     if (me && me.user) {
-      $('#nav-dashboard').style.display = 'inline-flex';
-      $('#nav-cta').textContent = 'Open dashboard';
+      location.replace('/app');
     }
   }).catch(() => {});
 
