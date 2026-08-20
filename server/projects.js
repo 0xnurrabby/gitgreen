@@ -160,7 +160,7 @@ async function createProject(user, accountRow, cat, commitDate) {
   const projectId = Number(info.lastInsertRowid);
 
   db.prepare('UPDATE accounts SET last_used_at = ?, last_error = NULL WHERE id = ?').run(auth.now(), accountRow.id);
-  auth.logActivity(user.id, accountRow.id, projectId, 'create', `Created ${repoName} (${commitMessage}) — https://github.com/${accountRow.github_username}/${repoName}`, 1);
+  auth.logActivity(user.id, accountRow.id, projectId, 'create', `Created ${repoName} (${commitMessage}) - https://github.com/${accountRow.github_username}/${repoName}`, 1);
 
   return { projectId, repoName, repoUrl, commits: 1 };
 }
@@ -231,7 +231,7 @@ async function evolveProject(user, accountRow, projectRow, commitDate) {
   db.prepare('UPDATE projects SET commits_done = commits_done + 1, evo_index = ?, pushed_at = ? WHERE id = ?')
     .run(next + 1, auth.now(), projectRow.id);
   db.prepare('UPDATE accounts SET last_used_at = ?, last_error = NULL WHERE id = ?').run(auth.now(), accountRow.id);
-  auth.logActivity(user.id, accountRow.id, projectRow.id, 'evolve', `Committed to ${projectRow.repo_name}: ${commitMessage} — ${projectRow.repo_url}`, 1);
+      auth.logActivity(user.id, accountRow.id, projectRow.id, 'evolve', `Committed to ${projectRow.repo_name}: ${commitMessage} - ${projectRow.repo_url}`, 1);
 
   return { projectId: projectRow.id, repoName: projectRow.repo_name, repoUrl: projectRow.repo_url, commits: 1, commitMessage };
 }

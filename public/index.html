@@ -49,7 +49,7 @@
         <a class="nav-link" data-view="projects"><span class="ic">▤</span> Projects <span class="pill" id="nav-projects-count"></span></a>
         <a class="nav-link" data-view="plans"><span class="ic">◷</span> Plans</a>
         <a class="nav-link" data-view="logs"><span class="ic">▥</span> Activity</a>
-        <a class="nav-link" data-view="plan"><span class="ic">♖</span> Plan <span class="pill" id="nav-plan-name">Free</span></a>
+        <a class="nav-link" data-view="plan"><span class="ic">♖</span> Subscription <span class="pill" id="nav-plan-name">Free</span></a>
         <a class="nav-link" data-view="settings"><span class="ic">⚙</span> Settings</a>
         <a class="nav-link hidden" data-view="admin" id="nav-admin-link" href="/admin"><span class="ic">⚑</span> Admin</a>
       </nav>
@@ -73,7 +73,7 @@
             <strong id="sub-banner-title">Free trial active</strong>
             <span id="sub-banner-sub" class="muted"></span>
           </div>
-          <a class="btn btn-primary btn-sm" href="#plan" onclick="go('plan')">Upgrade</a>
+          <a class="btn btn-primary btn-sm" href="#plan" data-goto="plan">Upgrade</a>
         </div>
       </div>
 
@@ -177,12 +177,12 @@
         <div id="logs" class="logs"></div>
       </section>
 
-      <!-- Plan & Subscription -->
+      <!-- Subscription -->
       <section class="view" id="view-plan">
         <header class="view-head">
           <div>
             <p class="kicker">Subscription</p>
-            <h2>Your plan</h2>
+            <h2>Your subscription</h2>
           </div>
           <button class="btn btn-ghost" id="plan-refresh">Refresh</button>
         </header>
@@ -191,7 +191,7 @@
 
         <div class="panel">
           <div class="panel-head">
-            <h3>Choose a plan</h3>
+            <h3>Choose a subscription</h3>
             <span class="muted">Pay once a month with crypto. No cards, no banks. Upgrade anytime - you only pay the price difference.</span>
           </div>
           <div id="plan-grid" class="plan-grid"></div>

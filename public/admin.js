@@ -544,7 +544,7 @@
       <div class="panel" style="max-width:560px">
         <div class="panel-head"><h3>Subscription</h3><span class="muted">Manage this user's plan, days and account limit.</span></div>
         <div class="plan-current-stats" style="margin-bottom:16px">
-          <div class="pcs"><span class="pcs-l">Plan</span><span class="pcs-v">${esc(planName)}</span></div>
+          <div class="pcs"><span class="pcs-l">Subscription</span><span class="pcs-v">${esc(planName)}</span></div>
           <div class="pcs"><span class="pcs-l">Status</span><span class="pcs-v">${active ? '<span style="color:var(--green)">active</span>' : '<span style="color:var(--red)">' + esc(sub ? sub.status : 'none') + '</span>'}</span></div>
           <div class="pcs"><span class="pcs-l">Expires</span><span class="pcs-v">${expires}</span></div>
           <div class="pcs"><span class="pcs-l">Days left</span><span class="pcs-v">${daysLeft}</span></div>

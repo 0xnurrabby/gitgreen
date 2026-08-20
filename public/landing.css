@@ -160,6 +160,8 @@ img { max-width: 100%; display: block; }
 .hero-badge .live { display: inline-flex; align-items: center; }
 .hero-badge .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2s infinite; margin-right: 8px; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+.hero-kicker { display: flex; align-items: center; gap: 9px; color: var(--green-2); font-size: 14px; font-weight: 700; }
+.hero-kicker .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2s infinite; }
 .hero h1 {
   font-family: var(--display); font-size: clamp(38px, 5.4vw, 60px); line-height: 1.06;
   letter-spacing: -.03em; font-weight: 700; margin: 22px 0 20px;
@@ -179,6 +181,10 @@ img { max-width: 100%; display: block; }
 .frame-top .dot { width: 11px; height: 11px; border-radius: 50%; }
 .frame-top .dot.r { background: #ff5f57; } .frame-top .dot.y { background: #febc2e; } .frame-top .dot.g { background: #28c840; }
 .frame-top .title { margin-left: 12px; font-family: var(--mono); font-size: 12px; color: var(--dim); }
+.visual-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); color: var(--muted); font-size: 12px; }
+.visual-status div { display: flex; align-items: center; gap: 7px; }
+.visual-status strong { color: var(--ink); font-size: 12px; font-weight: 600; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
 .heat-wrap { overflow-x: auto; }
 .heat-cols { display: flex; gap: 4px; min-width: max-content; }
 .heat-col { display: flex; flex-direction: column; gap: 4px; }
@@ -208,7 +214,7 @@ img { max-width: 100%; display: block; }
   background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
   padding: 14px 18px; box-shadow: var(--shadow); animation: float 6s ease-in-out infinite;
 }
-.float-card .ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; }
+.float-card .ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; font-weight: 800; color: var(--green-2); }
 .float-card .t { font-weight: 700; font-size: 14px; }
 .float-card .s { font-size: 12px; color: var(--muted); }
 .fc-streak { top: -22px; left: -18px; }
