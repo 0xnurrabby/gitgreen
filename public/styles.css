@@ -497,36 +497,19 @@ a.logo-row:hover { text-decoration: none; }
 
 /* ---------- Subscription banner ---------- */
 .sub-banner-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.sub-banner-icon {
-  width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--accent), var(--green)); color: #fff; font-size: 20px;
-  box-shadow: 0 6px 18px rgba(91,77,255,.25);
-}
 .sub-banner-text { flex: 1; min-width: 180px; display: flex; flex-direction: column; }
 .sub-banner-text strong { font-size: 15px; }
 .sub-banner-text .muted { font-size: 13px; }
 
 /* ---------- Plan / subscription ---------- */
-.plan-current-card { position: relative; overflow: hidden; }
-.plan-current-card::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(ellipse at 100% 0%, rgba(91,77,255,.08), transparent 55%);
-}
-.plan-current-main { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
-.plan-current-icon {
-  width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
-  background: linear-gradient(135deg, var(--accent), var(--green)); color: #fff;
-  font-size: 26px; font-weight: 800; flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(91,77,255,.25);
-}
 .plan-current-name { font-size: 20px; font-weight: 800; letter-spacing: -.01em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.plan-current-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.plan-current-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; margin-bottom: 16px; }
 .pcs { background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
 .pcs-l { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin-bottom: 4px; }
 .pcs-v { font-family: var(--mono); font-size: 15px; font-weight: 700; }
 .plan-limit { display: flex; flex-direction: column; gap: 8px; }
 .plan-limit-bar { height: 10px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
-.plan-limit-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); border-radius: 999px; transition: width .4s; }
+.plan-limit-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width .4s; }
 .plan-trial-note, .plan-expired-note {
   margin-top: 16px; padding: 12px 14px; border-radius: 12px; font-size: 13.5px;
   background: var(--accent-soft); border: 1px solid rgba(91,77,255,.2); color: var(--muted);
@@ -536,10 +519,10 @@ a.logo-row:hover { text-decoration: none; }
 .plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
 .plan-card-tile { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 22px; }
 .plan-card-tile.popular { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow-md); }
-.plan-card-tile.current { border-color: var(--green); background: linear-gradient(180deg, rgba(46,160,67,.05), transparent); }
+.plan-card-tile.current { border-color: var(--green); background: var(--green-dim); }
 .plan-tag {
   position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
-  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff;
+  background: var(--accent); color: #fff;
   font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
   padding: 4px 12px; border-radius: 999px; box-shadow: 0 4px 12px rgba(91,77,255,.3); white-space: nowrap;
 }

@@ -584,13 +584,8 @@
 
     box.innerHTML = '' +
       '<div class="panel plan-current-card">' +
-        '<div class="plan-current-main">' +
-          '<div class="plan-current-icon">' + (plan.name || 'Free').charAt(0) + '</div>' +
-          '<div>' +
-            '<div class="plan-current-name">' + (plan.name || 'Free') + ' plan ' + statusBadge + '</div>' +
-            '<div class="muted">' + (sub.source === 'trial' ? 'Free trial' : sub.source === 'admin' ? 'Granted by admin' : 'Paid subscription') + '</div>' +
-          '</div>' +
-        '</div>' +
+        '<div class="plan-current-name">' + (plan.name || 'Free') + ' plan ' + statusBadge + '</div>' +
+        '<div class="muted">' + (sub.source === 'trial' ? 'Free trial' : sub.source === 'admin' ? 'Granted by admin' : 'Paid subscription') + '</div>' +
         '<div class="plan-current-stats">' +
           '<div class="pcs"><span class="pcs-l">Expires</span><span class="pcs-v">' + expiry + '</span></div>' +
           '<div class="pcs"><span class="pcs-l">Days left</span><span class="pcs-v">' + (active ? daysLeft + ' days' : '0') + '</span></div>' +
