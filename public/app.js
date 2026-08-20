@@ -930,21 +930,21 @@
       let idx = 0;
       const total = cells.length;
       const tick = () => {
-        const step = Math.max(1, Math.round(total / 48));
+        const step = Math.max(1, Math.round(total / 96));
         for (let k = 0; k < step && idx < total; k++, idx++) {
           const cell = cells[idx];
           cell.classList.add(levels[weights[idx]], 'lit');
-          setTimeout(() => cell.classList.remove('lit'), 420);
+          setTimeout(() => cell.classList.remove('lit'), 560);
         }
         const f = idx / total;
         setPhase(phase(f));
         if (bar) bar.style.width = Math.round(f * 100) + '%';
         if (idx < total) {
-          setTimeout(tick, 26);
+          setTimeout(tick, 44);
         } else {
           setPhase(3);
           if (bar) bar.style.width = '100%';
-          setTimeout(animate, 3400);
+          setTimeout(animate, 4600);
         }
       };
       tick();

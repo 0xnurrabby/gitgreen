@@ -85,21 +85,21 @@
     let idx = 0;
     const total = cells.length;
     const tick = () => {
-      const step = Math.max(1, Math.round(total / 56));
+      const step = Math.max(1, Math.round(total / 96));
       for (let k = 0; k < step && idx < total; k++, idx++) {
         const cell = cells[idx];
         cell.classList.add(levels[weights[idx]], 'lit');
-        setTimeout(() => cell.classList.remove('lit'), 420);
+        setTimeout(() => cell.classList.remove('lit'), 560);
       }
       const fraction = idx / total;
       setPhase(phase(fraction));
       setBar(fraction, false);
       if (idx < total) {
-        setTimeout(tick, 26);
+        setTimeout(tick, 44);
       } else {
         setPhase(3);
         setBar(1, true);
-        setTimeout(animateGrid, 3400);
+        setTimeout(animateGrid, 4600);
       }
     };
     tick();
