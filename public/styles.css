@@ -198,7 +198,7 @@ b { color: var(--ink); }
 .nav-link.active { color: var(--accent); background: var(--accent-soft); }
 .nav-link .ic { width: 18px; color: var(--dim); }
 .nav-link.active .ic { color: var(--accent); }
-.pill { margin-left: auto; background: var(--green-dim); color: var(--green); font-size: 11px; padding: 2px 8px; border-radius: 999px; font-family: var(--mono); }
+.pill { margin-left: auto; background: transparent; color: var(--green); font-size: 11px; padding: 0; border-radius: 0; font-family: var(--mono); font-weight: 700; white-space: nowrap; }
 .side-foot { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
 .theme-toggle {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
