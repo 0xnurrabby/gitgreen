@@ -43,11 +43,11 @@
   $$('.reveal').forEach((el) => io.observe(el));
 
   // Animated contribution grid in the hero.
-  // It starts empty, fills completely to a healthy green grid, then resets.
-  // A synchronized activity line below (not an overlay) shows the current step.
+  // Cells fill smoothly in a staggered sweep while a flat timeline below
+  // walks through the product story. No overlays, no boxes.
   const heat = $('#heat');
-  const visStep = $('#vis-step');
   const visBar = $('#vis-progress-bar');
+  const visItems = $$('#vis-timeline .vt-item');
   const COLS = 24, ROWS = 7;
   const levels = ['', 'l1', 'l2', 'l3', 'l4'];
   const cells = [];
@@ -64,39 +64,44 @@
   }
   // Every cell gets a level so the final grid is fully green and balanced.
   const weights = cells.map(() => [1, 1, 2, 2, 3, 4][Math.floor(Math.random() * 6)]);
-  const steps = [
-    { at: 0.00, text: 'Planning activity' },
-    { at: 0.35, text: 'Writing commits' },
-    { at: 0.70, text: 'Grid getting greener' },
-    { at: 1.00, text: 'Your GitHub stays active automatically' }
-  ];
-  function setStep(fraction) {
-    let current = steps[0];
-    for (const s of steps) { if (fraction >= s.at) current = s; }
-    if (visStep && visStep.textContent !== current.text) visStep.textContent = current.text;
-    if (visBar) visBar.style.width = Math.round(fraction * 100) + '%';
+  const phase = (fraction) => fraction >= 1 ? 3 : fraction >= .7 ? 2 : fraction >= .35 ? 1 : 0;
+  function setPhase(p) {
+    visItems.forEach((el) => {
+      const s = Number(el.dataset.step);
+      el.classList.toggle('active', s === p);
+      el.classList.toggle('done', s < p);
+    });
+  }
+  function setBar(fraction, done) {
+    if (!visBar) return;
+    visBar.style.width = Math.round(fraction * 100) + '%';
+    visBar.style.backgroundColor = done ? 'var(--green-2)' : 'var(--green)';
   }
   function animateGrid() {
-    cells.forEach((cell) => {
-      cell.classList.remove('l1', 'l2', 'l3', 'l4', 'pop');
-    });
+    // Graceful reset: cells fade back to empty via their color transition.
+    cells.forEach((cell) => cell.classList.remove('l1', 'l2', 'l3', 'l4', 'lit'));
+    setPhase(0);
+    setBar(0, false);
     let idx = 0;
     const total = cells.length;
     const tick = () => {
-      const step = Math.max(1, Math.round(total / 40));
+      const step = Math.max(1, Math.round(total / 56));
       for (let k = 0; k < step && idx < total; k++, idx++) {
         const cell = cells[idx];
-        cell.classList.add(levels[weights[idx]], 'pop');
+        cell.classList.add(levels[weights[idx]], 'lit');
+        setTimeout(() => cell.classList.remove('lit'), 420);
       }
-      setStep(idx / total);
+      const fraction = idx / total;
+      setPhase(phase(fraction));
+      setBar(fraction, false);
       if (idx < total) {
-        setTimeout(tick, 30);
+        setTimeout(tick, 26);
       } else {
-        setStep(1);
-        setTimeout(animateGrid, 3000);
+        setPhase(3);
+        setBar(1, true);
+        setTimeout(animateGrid, 3400);
       }
     };
-    setStep(0);
     tick();
   }
   setTimeout(animateGrid, 300);

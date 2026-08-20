@@ -893,6 +893,65 @@
   $('#refresh-logs').addEventListener('click', async () => { await loadLogs(); toast('Refreshed.'); });
   $('#proj-search').addEventListener('input', renderProjects);
 
+  // ---------- Auth page visual ----------
+  // Animated contribution grid + activity timeline on the sign-in screen.
+  (function initAuthVisual() {
+    const heat = $('#auth-heat');
+    if (!heat) return;
+    const bar = $('#auth-progress-bar');
+    const items = $$('#auth-timeline .vt-item');
+    const COLS = 20, ROWS = 7;
+    const levels = ['', 'l1', 'l2', 'l3', 'l4'];
+    const cells = [];
+    for (let c = 0; c < COLS; c++) {
+      const col = document.createElement('div');
+      col.className = 'heat-col';
+      for (let r = 0; r < ROWS; r++) {
+        const cell = document.createElement('div');
+        cell.className = 'hcell';
+        cells.push(cell);
+        col.appendChild(cell);
+      }
+      heat.appendChild(col);
+    }
+    const weights = cells.map(() => [1, 1, 2, 2, 3, 4][Math.floor(Math.random() * 6)]);
+    const phase = (f) => f >= 1 ? 3 : f >= .7 ? 2 : f >= .35 ? 1 : 0;
+    function setPhase(p) {
+      items.forEach((el) => {
+        const s = Number(el.dataset.step);
+        el.classList.toggle('active', s === p);
+        el.classList.toggle('done', s < p);
+      });
+    }
+    function animate() {
+      cells.forEach((c) => c.classList.remove('l1', 'l2', 'l3', 'l4', 'lit'));
+      setPhase(0);
+      if (bar) bar.style.width = '0%';
+      let idx = 0;
+      const total = cells.length;
+      const tick = () => {
+        const step = Math.max(1, Math.round(total / 48));
+        for (let k = 0; k < step && idx < total; k++, idx++) {
+          const cell = cells[idx];
+          cell.classList.add(levels[weights[idx]], 'lit');
+          setTimeout(() => cell.classList.remove('lit'), 420);
+        }
+        const f = idx / total;
+        setPhase(phase(f));
+        if (bar) bar.style.width = Math.round(f * 100) + '%';
+        if (idx < total) {
+          setTimeout(tick, 26);
+        } else {
+          setPhase(3);
+          if (bar) bar.style.width = '100%';
+          setTimeout(animate, 3400);
+        }
+      };
+      tick();
+    }
+    setTimeout(animate, 350);
+  })();
+
 // ---------- Init ----------
   let authRetryTimer = null;
   function clearAuthRetry() {

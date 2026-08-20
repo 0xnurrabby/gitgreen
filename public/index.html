@@ -15,14 +15,34 @@
 
   <!-- Auth screen -->
   <div id="auth-screen" class="auth-screen hidden">
-    <div class="auth-card">
-      <div class="logo-wrap">
-        <img src="/logo.svg" class="logo-img" alt="GitGreen">
+    <div class="auth-wrap">
+      <div class="auth-brand">
+        <a class="auth-brand-logo" href="/">
+          <img src="/logo.svg" alt="GitGreen">
+          <span>Git<em>Green</em></span>
+        </a>
+        <h1 class="auth-headline">Keep your GitHub <span class="hl-green">active</span>,<br>automatically.</h1>
+        <p class="auth-brand-sub">Connect once. Let GitGreen handle the daily routine.</p>
+        <div class="auth-visual">
+          <div class="auth-visual-head">Contribution activity</div>
+          <div class="auth-heat" id="auth-heat"></div>
+          <div class="auth-timeline" id="auth-timeline">
+            <div class="vt-item" data-step="0"><span class="vt-ic">🗓</span><span class="vt-t">Planning your activity</span></div>
+            <div class="vt-item" data-step="1"><span class="vt-ic">✍</span><span class="vt-t">Writing realistic commits</span></div>
+            <div class="vt-item" data-step="2"><span class="vt-ic">🌱</span><span class="vt-t">Growing your contribution grid</span></div>
+            <div class="vt-item" data-step="3"><span class="vt-ic">✓</span><span class="vt-t">Your GitHub is active</span></div>
+          </div>
+          <div class="auth-progress"><span id="auth-progress-bar"></span></div>
+        </div>
       </div>
-      <h1 class="auth-title">Your green grid,<br>on autopilot.</h1>
-      <p class="auth-sub">Sign in with your email, connect your GitHub account, and let realistic activity keep your profile alive every single day.</p>
-
-      <div id="privy-root" class="privy-root"></div>
+      <div class="auth-card">
+        <div class="logo-wrap">
+          <img src="/logo.svg" class="logo-img" alt="GitGreen">
+        </div>
+        <h1 class="auth-title">Your green grid,<br>on autopilot.</h1>
+        <p class="auth-sub">Sign in with your email and let realistic activity keep your profile alive.</p>
+        <div id="privy-root" class="privy-root"></div>
+      </div>
     </div>
   </div>
 
