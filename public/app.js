@@ -308,6 +308,9 @@
   async function loadAccounts() {
     state.accounts = await api('/api/accounts');
     renderMe();
+    renderProjAccountSelect();
+    let health = {};
+    try { health = await api('/api/accounts/health'); health = Array.isArray(health) ? health : []; } catch (e) { health = []; }
     const box = $('#accounts-list');
     box.innerHTML = '';
     const sub = state.subscription || {};
@@ -328,8 +331,13 @@
       const el = document.createElement('div');
       el.className = 'account-card';
       const source = a.is_oauth ? '<span class="badge on" style="margin-left:auto">oauth</span>' : `<span class="badge ${a.is_active ? 'on' : 'off'}" style="margin-left:auto">${a.is_active ? 'active' : 'paused'}</span>`;
+      const h = health.find((x) => String(x.id) === String(a.id));
+      const healthBadge = h && h.errorsToday > 0
+        ? `<span class="badge off" title="${esc(h.last_error || '')}">${h.errorsToday} issue${h.errorsToday > 1 ? 's' : ''} today</span>`
+        : '<span class="badge on">healthy</span>';
       el.innerHTML = `
         <div class="account-top">
+          <input type="checkbox" class="acc-sel" data-id="${a.id}" title="Select this account" ${a.is_active ? '' : ''}>
           <div class="account-avatar"><img src="${a.avatar_url || ''}" alt="" onerror="this.style.display='none'"></div>
           <div>
             <h4>@${a.github_username}</h4>
@@ -337,31 +345,180 @@
           </div>
           ${source}
         </div>
-        <div class="account-meta">connected ${new Date(a.created_at).toLocaleDateString()}${a.last_error ? ' | last error: ' + a.last_error : ''}</div>
+        <div class="account-meta">connected ${new Date(a.created_at).toLocaleDateString()} · ${healthBadge}</div>
         <div class="account-actions">
           <button class="btn btn-ghost" data-toggle="${a.id}">${a.is_active ? 'Pause' : 'Resume'}</button>
+          <button class="btn btn-ghost" data-settings="${a.id}">Settings</button>
           <button class="btn btn-ghost" data-remove="${a.id}" style="color:var(--red)">Remove</button>
-        </div>`;
+        </div>
+        <div class="acc-settings" id="acc-settings-${a.id}" style="display:none"></div>`;
       box.appendChild(el);
     });
     $$('#accounts-list [data-toggle]').forEach((b) => b.addEventListener('click', async () => {
       await api('/api/accounts/' + b.dataset.toggle + '/activate', { method: 'POST', body: { active: b.textContent === 'Resume' } });
       await Promise.all([loadAccounts(), loadStats()]);
     }));
+    $$('#accounts-list [data-settings]').forEach((b) => b.addEventListener('click', () => toggleAccountSettings(b.dataset.settings)));
     $$('#accounts-list [data-remove]').forEach((b) => b.addEventListener('click', async () => {
       if (!confirm('Remove this GitHub account?')) return;
       await api('/api/accounts/' + b.dataset.remove, { method: 'DELETE' });
       await Promise.all([loadAccounts(), loadStats()]);
       toast('Account removed.');
     }));
+    bindBulk();
+  }
+
+  let selectedAccounts = new Set();
+  function bindBulk() {
+    const selAll = $('#bulk-select-all');
+    if (!selAll) return;
+    selectedAccounts = new Set($$('.acc-sel:checked').map((c) => Number(c.dataset.id)));
+    updateBulkCount();
+    $$('.acc-sel').forEach((c) => c.addEventListener('change', () => {
+      if (c.checked) selectedAccounts.add(Number(c.dataset.id));
+      else selectedAccounts.delete(Number(c.dataset.id));
+      const all = $$('.acc-sel');
+      selAll.checked = all.length > 0 && all.every((x) => x.checked);
+      updateBulkCount();
+    }));
+    selAll.addEventListener('change', () => {
+      $$('.acc-sel').forEach((c) => { c.checked = selAll.checked; });
+      selectedAccounts = selAll.checked ? new Set($$('.acc-sel').map((c) => Number(c.dataset.id))) : new Set();
+      updateBulkCount();
+    });
+    $('#bulk-off').addEventListener('click', async () => await bulkSetActive(0));
+    $('#bulk-on').addEventListener('click', async () => await bulkSetActive(1));
+  }
+  function updateBulkCount() {
+    const el = $('#bulk-count');
+    if (el) el.textContent = selectedAccounts.size ? selectedAccounts.size + ' selected' : '';
+  }
+  async function bulkSetActive(active) {
+    if (selectedAccounts.size === 0) { toast('Select at least one account.', true); return; }
+    await api('/api/accounts/set-active', { method: 'POST', body: { ids: [...selectedAccounts], active } });
+    toast(active ? 'Selected accounts turned on.' : 'Selected accounts turned off.');
+    await Promise.all([loadAccounts(), loadStats()]);
+  }
+
+  function toggleAccountSettings(id) {
+    const panel = $('#acc-settings-' + id);
+    const acc = state.accounts.find((a) => String(a.id) === String(id));
+    if (!acc) return;
+    if (panel.style.display === 'none') {
+      const s = acc.settings || {};
+      panel.innerHTML = `
+        <div class="acc-settings-inner">
+          <div class="setting-row">
+            <div><h4>Autopilot</h4><p class="muted">Let this account run on its own.</p></div>
+            <label class="switch"><input type="checkbox" class="as-enabled" ${acc.is_active ? 'checked' : ''}><span></span></label>
+          </div>
+          <div class="setting-row">
+            <div><h4>Min commits / day</h4></div>
+            <input type="number" class="as-min" value="${s.min_commits != null ? s.min_commits : ''}" placeholder="use global" style="width:100px">
+          </div>
+          <div class="setting-row">
+            <div><h4>Max commits / day</h4></div>
+            <input type="number" class="as-max" value="${s.max_commits != null ? s.max_commits : ''}" placeholder="use global" style="width:100px">
+          </div>
+          <div class="setting-row">
+            <div><h4>Sessions / day</h4></div>
+            <input type="number" class="as-sessions" value="${s.sessions_per_day != null ? s.sessions_per_day : ''}" placeholder="use global" style="width:100px">
+          </div>
+          <div class="account-actions">
+            <button class="btn btn-primary btn-sm" data-save-settings="${id}">Save settings</button>
+          </div>
+        </div>`;
+      panel.style.display = 'block';
+      $('#acc-settings-' + id + ' [data-save-settings]').addEventListener('click', async () => {
+        const enabled = $('#acc-settings-' + id + ' .as-enabled').checked;
+        const body = {
+          scheduler_enabled: enabled ? 1 : 0,
+          min_commits: $('#acc-settings-' + id + ' .as-min').value || null,
+          max_commits: $('#acc-settings-' + id + ' .as-max').value || null,
+          sessions_per_day: $('#acc-settings-' + id + ' .as-sessions').value || null
+        };
+        await api('/api/accounts/' + id + '/settings', { method: 'PUT', body });
+        toast('Account settings saved.');
+        await Promise.all([loadAccounts(), loadStats()]);
+      });
+    } else {
+      panel.style.display = 'none';
+    }
   }
 
   // ---------- Catalog & projects ----------
   let projCategory = 'All';
+  let projAccount = '';
   async function loadCatalog() {
-    state.catalog = await api('/api/catalog');
+    const acc = $('#proj-account') ? $('#proj-account').value : '';
+    projAccount = acc;
+    state.catalog = await api('/api/catalog' + (acc ? '?accountId=' + encodeURIComponent(acc) : ''));
     renderFilters();
     renderProjects();
+    renderProjectRepos();
+  }
+  function renderProjAccountSelect() {
+    const sel = $('#proj-account');
+    if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = '';
+    const allOpt = document.createElement('option');
+    allOpt.value = '';
+    allOpt.textContent = 'All accounts';
+    sel.appendChild(allOpt);
+    (state.accounts || []).forEach((a) => {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = '@' + a.github_username;
+      sel.appendChild(opt);
+    });
+    if (prev) sel.value = prev;
+    // Keep the plans filter in sync.
+    const sel2 = $('#plans-account');
+    if (sel2) {
+      const prev2 = sel2.value;
+      sel2.innerHTML = '';
+      const allOpt2 = document.createElement('option');
+      allOpt2.value = '';
+      allOpt2.textContent = 'All accounts';
+      sel2.appendChild(allOpt2);
+      (state.accounts || []).forEach((a) => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = '@' + a.github_username;
+        sel2.appendChild(opt);
+      });
+      if (prev2) sel2.value = prev2;
+    }
+  }
+  function renderProjectRepos() {
+    const box = $('#project-repos');
+    if (!box) return;
+    const acc = $('#proj-account') ? $('#proj-account').value : '';
+    const list = acc
+      ? state.projects.filter((p) => String(p.account_id) === String(acc))
+      : state.projects;
+    const sorted = [...list].sort((a, b) => (b.pushed_at || 0) - (a.pushed_at || 0));
+    if (!sorted.length) { box.innerHTML = '<div class="empty">No projects pushed yet for this account.</div>'; return; }
+    const accNames = new Map((state.accounts || []).map((a) => [a.id, a.github_username]));
+    box.innerHTML = `
+      <div class="panel">
+        <div class="panel-head"><h3>Pushed repositories (${sorted.length})</h3><span class="muted">Which repos were pushed and from which account</span></div>
+        <div class="repo-list">${sorted.map((p) => `
+          <div class="repo-row">
+            <div class="repo-main">
+              <strong>${esc(p.repo_name || p.slug)}</strong>
+              <a href="${esc(p.repo_url || '')}" target="_blank" rel="noopener" class="muted">${esc(p.repo_url || '')}</a>
+            </div>
+            <div class="repo-meta">
+              <span>${esc(p.category)}</span>
+              <span>@${accNames.get(p.account_id) || '?'}</span>
+              <span>${p.commits_done || 0} commits</span>
+              <span class="${p.status === 'done' ? 'badge on' : 'badge'}">${p.status}</span>
+              <span class="muted">${ago(p.pushed_at)}</span>
+            </div>
+          </div>`).join('')}</div>
+      </div>`;
   }
   function renderFilters() {
     const cats = ['All', ...new Set(state.catalog.map((p) => p.category))];
@@ -404,11 +561,13 @@
   async function loadProjects() {
     state.projects = await api('/api/projects');
     renderProjects();
+    renderProjectRepos();
   }
 
   // ---------- Plans ----------
   async function loadPlans() {
-    state.plans = await api('/api/plans');
+    const acc = $('#plans-account') ? $('#plans-account').value : '';
+    state.plans = await api('/api/plans' + (acc ? '?accountId=' + encodeURIComponent(acc) : ''));
     const box = $('#plans-list');
     box.innerHTML = '';
     if (!state.plans.length) { box.innerHTML = '<div class="empty">No plans yet.</div>'; return; }
@@ -892,6 +1051,11 @@
   });
   $('#refresh-logs').addEventListener('click', async () => { await loadLogs(); toast('Refreshed.'); });
   $('#proj-search').addEventListener('input', renderProjects);
+  $('#proj-account').addEventListener('change', async () => {
+    await loadCatalog();
+    await loadProjects();
+  });
+  $('#plans-account').addEventListener('change', async () => { await loadPlans(); });
 
   // ---------- Auth page visual ----------
   // Animated contribution grid + activity timeline on the sign-in screen.

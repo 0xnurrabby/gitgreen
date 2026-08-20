@@ -460,8 +460,7 @@ b { color: var(--ink); }
 .admin-table tr:hover td { background: var(--bg-2); }
 .admin-table .empty { padding: 40px 0; }
 
-.admin-user-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-.admin-user-card {
+.admin-user-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }.admin-user-card {
   background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
   padding: 18px; display: flex; flex-direction: column; gap: 14px; box-shadow: var(--shadow-sm);
   min-width: 0; transition: border-color .2s, box-shadow .2s, transform .2s;
@@ -653,3 +652,26 @@ a.logo-row:hover { text-decoration: none; }
   .plan-current-stats { grid-template-columns: 1fr; }
   .plan-grid { grid-template-columns: 1fr; }
 }
+
+/* Bulk account controls */
+.bulk-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 12px; margin-bottom: 14px; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--panel); box-shadow: var(--shadow-sm);
+}
+.bulk-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.bulk-check input { width: 16px; height: 16px; accent-color: var(--green); }
+.account-card .account-top input.acc-sel { width: 16px; height: 16px; accent-color: var(--green); align-self: center; flex-shrink: 0; }
+.acc-settings { border-top: 1px dashed var(--line); margin-top: 12px; padding-top: 14px; }
+.acc-settings-inner { display: flex; flex-direction: column; gap: 12px; }
+
+/* Pushed repos list */
+.repo-list { display: flex; flex-direction: column; gap: 8px; max-height: 460px; overflow-y: auto; }
+.repo-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-2);
+}
+.repo-main { display: flex; flex-direction: column; min-width: 0; }
+.repo-main strong { font-size: 14px; }
+.repo-main a { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+.repo-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--dim); font-family: var(--mono); }

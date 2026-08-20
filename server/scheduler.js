@@ -147,7 +147,7 @@ function makeDayPlan(userId, accountId, dateStr, settings) {
 }
 
 function ensurePlans(userId, accountId, days = 14) {
-  const settings = db.prepare('SELECT * FROM settings WHERE user_id = ?').get(userId) || {};
+  const settings = accountSettings(userId, accountId);
   const existing = new Set(
     (db.prepare('SELECT plan_date FROM day_plans WHERE user_id = ? AND account_id = ?').all(userId, accountId) || [])
       .map((r) => r.plan_date)
@@ -165,6 +165,24 @@ function ensurePlans(userId, accountId, days = 14) {
     added.push(dateStr);
   }
   return added;
+}
+
+// Merge an account's own settings over the user's global defaults, so each
+// account can plan at its own pace and on its own hours.
+function accountSettings(userId, accountId) {
+  const global = db.prepare('SELECT * FROM settings WHERE user_id = ?').get(userId) || {};
+  const acc = db.prepare('SELECT settings_json, is_active FROM accounts WHERE id = ?').get(accountId) || {};
+  let own = {};
+  try { own = acc.settings_json ? JSON.parse(acc.settings_json) : {}; } catch (e) { own = {}; }
+  return {
+    active_day_pct: own.active_day_pct != null ? own.active_day_pct : global.active_day_pct,
+    min_commits: own.min_commits != null ? own.min_commits : global.min_commits,
+    max_commits: own.max_commits != null ? own.max_commits : global.max_commits,
+    sessions_per_day: own.sessions_per_day != null ? own.sessions_per_day : global.sessions_per_day,
+    scheduler_enabled: (acc.is_active === 0) ? 0 : (own.scheduler_enabled != null ? own.scheduler_enabled : global.scheduler_enabled),
+    hourly_start: own.hourly_start != null ? own.hourly_start : global.hourly_start,
+    hourly_end: own.hourly_end != null ? own.hourly_end : global.hourly_end
+  };
 }
 
 function sessionState(row) {
@@ -193,6 +211,16 @@ const recentTopics = new Map();
 // in one go, and means a "Run"/"start" click mostly evolves existing repos.
 const DAILY_REPO_CAP = Math.max(1, parseInt(process.env.DAILY_REPO_CAP || '2', 10) || 2);
 
+// A real developer works on a handful of projects at a time, finishes each, then
+// starts something new. This caps how many active (unfinished) repos an account
+// can be building at once. Beyond it, activity only evolves the existing set and
+// no new repos are created until one is finished.
+const MAX_ACTIVE_REPOS = Math.max(1, parseInt(process.env.MAX_ACTIVE_REPOS || '4', 10) || 4);
+
+// A repo is considered "finished" after this many evolution commits, so the
+// account naturally moves on to a new project (like wrapping up a real one).
+const FINISH_EVO_INDEX = Math.max(8, parseInt(process.env.FINISH_EVO_INDEX || '16', 10) || 16);
+
 // How many new repos this account has created today (Bangladesh time).
 function dailyCreatesCount(userId, accountId, dateStr) {
   return db.prepare(
@@ -202,13 +230,13 @@ function dailyCreatesCount(userId, accountId, dateStr) {
 }
 
 async function tickUser(userId) {
-  const settings = db.prepare('SELECT * FROM settings WHERE user_id = ?').get(userId) || {};
-  const autopilot = settings.scheduler_enabled !== 0;
   const accounts = db.prepare('SELECT * FROM accounts WHERE user_id = ? AND is_active = 1').all(userId) || [];
   // Maintenance window: 20:00-22:00 Bangladesh time, no commits for anyone.
   if (isQuietNow()) return;
   for (const account of accounts) {
     if (busy.has(account.id)) continue;
+    const settings = accountSettings(userId, account.id);
+    const autopilot = settings.scheduler_enabled !== 0;
     ensurePlans(userId, account.id, 14);
 
     busy.add(account.id);
@@ -300,6 +328,13 @@ async function runSession(userId, account, session, dateOverride = null) {
   // Enforce the daily cap across everything (auto-pilot + manual runs).
   const createsLeftTotal = Math.max(0, DAILY_REPO_CAP - dailyCreatesCount(userId, account.id, todayBDStr()));
   const createsLeft = Math.min(createsLeftTotal, createBudget);
+
+  // A real developer only starts a new repo when they're not already juggling a
+  // full working set of active projects. Finished repos don't count here.
+  const activeCount = db.prepare(
+    'SELECT COUNT(*) AS n FROM projects WHERE user_id = ? AND account_id = ? AND status = ?'
+  ).get(userId, account.id, 'pushed').n || 0;
+  const workingSetFull = activeCount >= MAX_ACTIVE_REPOS;
   let focusIdx = 0;
   let commitIdx = 0;
 
@@ -320,9 +355,12 @@ async function runSession(userId, account, session, dateOverride = null) {
     }
 
     const noRepos = existing.length === 0;
-    const shouldCreate = noRepos || (createsLeft > 0 && Math.random() < 0.12);
+    // Only consider creating a new repo when the working set isn't full, we
+    // still have daily budget, and the chance fires. Once the set is full the
+    // session only evolves and finishes existing projects.
+    const shouldCreate = noRepos || (!workingSetFull && createsLeft > 0 && Math.random() < 0.08);
 
-    if (shouldCreate && createsLeft > 0) {
+    if (shouldCreate && createsLeft > 0 && !workingSetFull) {
       const topics = recentTopics.get(account.id) || [];
       // Avoid creating a duplicate: skip projects whose base repo already
       // exists on the user's GitHub (e.g. from an earlier failed push).
@@ -350,6 +388,10 @@ async function runSession(userId, account, session, dateOverride = null) {
         if (!target) break;
         try {
           await projects.evolveProject(user, account, target, commitDate);
+          const after = db.prepare('SELECT evo_index FROM projects WHERE id = ?').get(target.id);
+          if (after && Number(after.evo_index) >= FINISH_EVO_INDEX && target.status === 'pushed') {
+            db.prepare('UPDATE projects SET status = ? WHERE id = ?').run('done', target.id);
+          }
         } catch (err) {
           auth.logActivity(userId, account.id, target.id, 'error', `Commit failed (${target.repo_name}): ${err.message}`, 0);
         }
@@ -358,6 +400,12 @@ async function runSession(userId, account, session, dateOverride = null) {
         focusIdx += 1;
         try {
           await projects.evolveProject(user, account, target, commitDate);
+          // Once a repo has evolved enough it counts as finished, freeing a
+          // slot in the working set for a future new project.
+          const after = db.prepare('SELECT evo_index FROM projects WHERE id = ?').get(target.id);
+          if (after && Number(after.evo_index) >= FINISH_EVO_INDEX && target.status === 'pushed') {
+            db.prepare('UPDATE projects SET status = ? WHERE id = ?').run('done', target.id);
+          }
         } catch (err) {
           auth.logActivity(userId, account.id, target.id, 'error', `Commit failed (${target.repo_name}): ${err.message}`, 0);
         }

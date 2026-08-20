@@ -195,6 +195,7 @@ ensureUsersTable();
 addColumn('users', 'is_admin', 'INTEGER DEFAULT 0');
 addColumn('users', 'email', 'TEXT');
 addColumn('accounts', 'is_oauth', 'INTEGER DEFAULT 0');
+addColumn('accounts', 'settings_json', 'TEXT');
 addColumn('sessions', 'admin_authed', 'INTEGER DEFAULT 0');
 addColumn('payments', 'pay_url', 'TEXT');
 

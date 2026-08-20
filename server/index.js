@@ -219,7 +219,11 @@ async function main() {
   // ---------- GitHub accounts ----------
   app.get('/api/accounts', requireUser, (req, res) => {
     const rows = db.prepare('SELECT * FROM accounts WHERE user_id = ? ORDER BY created_at DESC').all(req.user.id) || [];
-    res.json(rows.map((a) => ({ ...a, token_enc: undefined })));
+    res.json(rows.map((a) => {
+      let settings = {};
+      try { settings = a.settings_json ? JSON.parse(a.settings_json) : {}; } catch (e) { settings = {}; }
+      return { ...a, token_enc: undefined, settings };
+    }));
   });
 
   app.post('/api/accounts', requireUser, async (req, res) => {
@@ -319,15 +323,51 @@ async function main() {
     res.json({ ok: true });
   });
 
+  // Per-account settings (commit range, sessions, active hours). Merged over
+  // the user's global settings by the scheduler.
+  app.put('/api/accounts/:id/settings', requireUser, (req, res) => {
+    const account = db.prepare('SELECT * FROM accounts WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
+    if (!account) return res.status(404).json({ error: 'not found' });
+    const b = req.body || {};
+    const cur = (() => { try { return JSON.parse(account.settings_json || '{}'); } catch (e) { return {}; } })();
+    ['min_commits', 'max_commits', 'sessions_per_day', 'active_day_pct', 'hourly_start', 'hourly_end', 'scheduler_enabled'].forEach((k) => {
+      if (b[k] !== undefined && b[k] !== null && b[k] !== '') cur[k] = Number(b[k]);
+    });
+    db.prepare('UPDATE accounts SET settings_json = ? WHERE id = ?').run(JSON.stringify(cur), account.id);
+    // Regenerate that account's plans so the new pacing takes effect today.
+    try { scheduler.ensurePlans(req.user.id, account.id, 14); } catch (e) {}
+    res.json({ ok: true, settings: cur });
+  });
+
+  // Bulk pause/resume for a set of accounts (e.g. dashboard "turn off all").
+  app.post('/api/accounts/set-active', requireUser, (req, res) => {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids.map(Number).filter(Boolean) : [];
+    const active = req.body?.active ? 1 : 0;
+    if (ids.length === 0) return res.status(400).json({ error: 'no accounts selected' });
+    const owned = new Set((db.prepare('SELECT id FROM accounts WHERE user_id = ?').all(req.user.id) || []).map((a) => a.id));
+    const valid = ids.filter((id) => owned.has(id));
+    if (valid.length === 0) return res.status(404).json({ error: 'no matching accounts' });
+    const ph = valid.map(() => '?').join(',');
+    db.prepare(`UPDATE accounts SET is_active = ? WHERE id IN (${ph})`).run(active, ...valid);
+    res.json({ ok: true, updated: valid.length });
+  });
+
   // ---------- Catalog & projects ----------
   app.get('/api/catalog', requireUser, (req, res) => {
-    const pushed = new Set((db.prepare('SELECT slug FROM projects WHERE user_id = ?').all(req.user.id) || []).map((r) => r.slug));
+    const accountId = req.query.accountId ? Number(req.query.accountId) : null;
+    const pushed = new Set((accountId
+      ? db.prepare('SELECT slug FROM projects WHERE user_id = ? AND account_id = ?').all(req.user.id, accountId)
+      : db.prepare('SELECT slug FROM projects WHERE user_id = ?').all(req.user.id)
+    ).map((r) => r.slug));
     const list = CATALOG.map((c) => ({ id: c.id, title: c.title, category: c.category, stack: c.stack, blurb: c.blurb, pushed: pushed.has(c.slug) }));
     res.json(list);
   });
 
   app.get('/api/projects', requireUser, (req, res) => {
-    const rows = db.prepare('SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC').all(req.user.id) || [];
+    const accountId = req.query.accountId ? Number(req.query.accountId) : null;
+    const rows = accountId
+      ? db.prepare('SELECT * FROM projects WHERE user_id = ? AND account_id = ? ORDER BY pushed_at DESC, id DESC LIMIT 400').all(req.user.id, accountId) || []
+      : db.prepare('SELECT * FROM projects WHERE user_id = ? ORDER BY pushed_at DESC, id DESC LIMIT 400').all(req.user.id) || [];
     res.json(rows);
   });
 
@@ -394,15 +434,36 @@ async function main() {
 
   app.get('/api/logs', requireUser, (req, res) => {
     const rows = db.prepare(
-      'SELECT * FROM activity_log WHERE user_id = ? ORDER BY id DESC LIMIT 60'
+      'SELECT * FROM activity_log WHERE user_id = ? AND ok = 1 ORDER BY id DESC LIMIT 60'
     ).all(req.user.id) || [];
     const accNames = new Map((db.prepare('SELECT id, github_username FROM accounts').all() || []).map((a) => [a.id, a.github_username]));
     res.json(rows.map((r) => ({ ...r, account_name: accNames.get(r.account_id) || null })));
   });
 
+  // Account health: per-account running totals of recent failures and last error,
+  // shown on the account card instead of cluttering the activity feed.
+  app.get('/api/accounts/health', requireUser, (req, res) => {
+    const accounts = db.prepare('SELECT id, github_username, last_error FROM accounts WHERE user_id = ?').all(req.user.id) || [];
+    const ids = accounts.map((a) => a.id);
+    const health = {};
+    if (ids.length) {
+      const ph = ids.map(() => '?').join(',');
+      const fails = db.prepare(
+        `SELECT account_id, COUNT(*) AS n FROM activity_log
+         WHERE user_id = ? AND account_id IN (${ph}) AND ok = 0 AND created_at >= ?
+         GROUP BY account_id`
+      ).all(req.user.id, ...ids, Date.now() - 24 * 3600000) || [];
+      fails.forEach((f) => { health[f.account_id] = { errorsToday: f.n }; });
+    }
+    res.json(accounts.map((a) => ({ id: a.id, github_username: a.github_username, last_error: a.last_error, errorsToday: (health[a.id] || {}).errorsToday || 0 })));
+  });
+
   // ---------- Scheduler & settings ----------
   app.get('/api/plans', requireUser, (req, res) => {
-    const rows = db.prepare('SELECT * FROM day_plans WHERE user_id = ? ORDER BY plan_date LIMIT 14').all(req.user.id) || [];
+    const accountId = req.query.accountId ? Number(req.query.accountId) : null;
+    const rows = accountId
+      ? db.prepare('SELECT * FROM day_plans WHERE user_id = ? AND account_id = ? ORDER BY plan_date LIMIT 14').all(req.user.id, accountId) || []
+      : db.prepare('SELECT * FROM day_plans WHERE user_id = ? ORDER BY plan_date LIMIT 14').all(req.user.id) || [];
     const accNames = new Map((db.prepare('SELECT id, github_username FROM accounts').all() || []).map((a) => [a.id, a.github_username]));
     res.json(rows.map((p) => {
       let sessions = [];

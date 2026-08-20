@@ -155,6 +155,12 @@
           </div>
           <button class="btn btn-primary" id="add-account-btn">+ Add account</button>
         </header>
+        <div class="bulk-bar" id="bulk-bar">
+          <label class="bulk-check"><input type="checkbox" id="bulk-select-all"><span>Select all</span></label>
+          <button class="btn btn-ghost btn-sm" id="bulk-off">Turn off selected</button>
+          <button class="btn btn-ghost btn-sm" id="bulk-on">Turn on selected</button>
+          <span class="muted" id="bulk-count" style="margin-left:auto;font-size:13px"></span>
+        </div>
         <div id="accounts-list" class="accounts-list"></div>
       </section>
 
@@ -165,12 +171,16 @@
             <p class="kicker">Library</p>
             <h2>365 projects</h2>
           </div>
-          <div class="search-box">
-            <input type="text" id="proj-search" placeholder="Search projects...">
+          <div class="head-actions">
+            <select id="proj-account" class="select" title="Filter by account"></select>
+            <div class="search-box">
+              <input type="text" id="proj-search" placeholder="Search projects...">
+            </div>
           </div>
         </header>
         <div class="filter-row" id="proj-filters"></div>
         <div id="projects-grid" class="projects-grid"></div>
+        <div id="project-repos"></div>
       </section>
 
       <!-- Plans -->
@@ -180,7 +190,10 @@
             <p class="kicker">Schedule</p>
             <h2>Planned activity</h2>
           </div>
-          <button class="btn btn-ghost" id="regenerate-btn">Regenerate</button>
+          <div class="head-actions">
+            <select id="plans-account" class="select" title="Filter by account"></select>
+            <button class="btn btn-ghost" id="regenerate-btn">Regenerate</button>
+          </div>
         </header>
         <div id="plans-list" class="plans-list"></div>
       </section>
