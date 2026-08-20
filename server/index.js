@@ -693,7 +693,8 @@ async function main() {
     const settings = db.prepare('SELECT * FROM settings WHERE user_id = ?').get(u.id) || {};
     let subscription = null;
     try { subscription = billing.serializeSub(u.id); } catch (e) {}
-    const payments = db.prepare('SELECT * FROM payments WHERE user_id = ? ORDER BY id DESC LIMIT 50').all(u.id) || [];
+    let payments = [];
+    try { payments = db.prepare('SELECT * FROM payments WHERE user_id = ? ORDER BY id DESC LIMIT 50').all(u.id) || []; } catch (e) { payments = []; }
     const accounts = (db.prepare('SELECT * FROM accounts WHERE user_id = ? ORDER BY created_at DESC').all(u.id) || []).map((a) => ({ ...a, token_enc: undefined }));
     const projects = db.prepare('SELECT * FROM projects WHERE user_id = ? ORDER BY pushed_at DESC, id DESC LIMIT 200').all(u.id) || [];
     const plans = (db.prepare('SELECT * FROM day_plans WHERE user_id = ? AND plan_date >= ? ORDER BY plan_date LIMIT 14').all(u.id, todayBDStr()) || []).map((p) => {

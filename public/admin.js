@@ -234,10 +234,18 @@
     state.userId = id;
     go('detail');
     $('#admin-detail-title').textContent = 'Loading user...';
+    $('#admin-detail-actions').innerHTML = '';
+    $$('.admin-tab-pane').forEach((p) => p.innerHTML = '');
     try {
       state.detail = await api('/api/admin/users/' + id);
       renderDetail();
-    } catch (e) { /* handled */ }
+    } catch (e) {
+      $('#admin-detail-title').textContent = 'Error loading user';
+      const pane = $('#' + state.tab + '-tab-pane') || $('#admin-tab-accounts');
+      if (pane) pane.innerHTML = '<div class="empty">Could not load this user.<br><span style="font-size:12px;color:var(--red)">' + esc(e.message || e) + '</span></div>';
+      toast('Failed to load user: ' + (e.message || e), true);
+      console.error('[admin] openUser failed:', e);
+    }
   }
 
   function renderDetail() {
@@ -294,14 +302,20 @@
 
   function renderTab() {
     if (!state.detail) return;
-    switch (state.tab) {
-      case 'accounts': renderAccounts(); break;
-      case 'projects': renderProjects(); break;
-      case 'plans': renderPlans(); break;
-      case 'logs': renderLogs(); break;
-      case 'settings': renderSettings(); break;
-      case 'queue': renderQueue(); break;
-      case 'subscription': renderSubscription(); break;
+    try {
+      switch (state.tab) {
+        case 'accounts': renderAccounts(); break;
+        case 'projects': renderProjects(); break;
+        case 'plans': renderPlans(); break;
+        case 'logs': renderLogs(); break;
+        case 'settings': renderSettings(); break;
+        case 'queue': renderQueue(); break;
+        case 'subscription': renderSubscription(); break;
+      }
+    } catch (e) {
+      const pane = $('#' + state.tab + '-tab-pane');
+      if (pane) pane.innerHTML = '<div class="empty">Something went wrong loading this tab.<br><span style="font-size:12px;color:var(--red)">' + esc(e.message || e) + '</span></div>';
+      console.error('[admin] render tab "' + state.tab + '" failed:', e);
     }
   }
 
