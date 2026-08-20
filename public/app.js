@@ -3,6 +3,10 @@
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   const state = { user: null, stats: null, catalog: [], accounts: [], projects: [], plans: [], settings: {}, oauth: null };
 
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
   function toast(msg, err = false) {
     const t = $('#toast');
     t.textContent = msg;
@@ -328,32 +332,39 @@
       return;
     }
     state.accounts.forEach((a) => {
-      const el = document.createElement('div');
-      el.className = 'account-card';
-      const source = a.is_oauth ? '<span class="badge on" style="margin-left:auto">oauth</span>' : `<span class="badge ${a.is_active ? 'on' : 'off'}" style="margin-left:auto">${a.is_active ? 'active' : 'paused'}</span>`;
-      const h = health.find((x) => String(x.id) === String(a.id));
-      const healthBadge = h && h.errorsToday > 0
-        ? `<span class="badge off" title="${esc(h.last_error || '')}">${h.errorsToday} issue${h.errorsToday > 1 ? 's' : ''} today</span>`
-        : '<span class="badge on">healthy</span>';
-      el.innerHTML = `
-        <div class="account-top">
-          <input type="checkbox" class="acc-sel" data-id="${a.id}" title="Select this account" ${a.is_active ? '' : ''}>
-          <div class="account-avatar"><img src="${a.avatar_url || ''}" alt="" onerror="this.style.display='none'"></div>
-          <div>
-            <h4>@${a.github_username}</h4>
-            <a href="${a.profile_url}" target="_blank" rel="noopener">${a.profile_url}</a>
+      try {
+        const el = document.createElement('div');
+        el.className = 'account-card';
+        const source = a.is_oauth ? '<span class="badge on" style="margin-left:auto">oauth</span>' : `<span class="badge ${a.is_active ? 'on' : 'off'}" style="margin-left:auto">${a.is_active ? 'active' : 'paused'}</span>`;
+        const h = health.find((x) => String(x.id) === String(a.id));
+        const healthBadge = h && h.errorsToday > 0
+          ? `<span class="badge off" title="${esc(h.last_error || '')}">${h.errorsToday} issue${h.errorsToday > 1 ? 's' : ''} today</span>`
+          : '<span class="badge on">healthy</span>';
+        el.innerHTML = `
+          <div class="account-top">
+            <input type="checkbox" class="acc-sel" data-id="${a.id}" title="Select this account" ${a.is_active ? '' : ''}>
+            <div class="account-avatar"><img src="${esc(a.avatar_url || '')}" alt="" onerror="this.style.display='none'"></div>
+            <div>
+              <h4>@${esc(a.github_username)}</h4>
+              <a href="${esc(a.profile_url || '')}" target="_blank" rel="noopener">${esc(a.profile_url || '')}</a>
+            </div>
+            ${source}
           </div>
-          ${source}
-        </div>
-        <div class="account-meta">connected ${new Date(a.created_at).toLocaleDateString()} · ${healthBadge}</div>
-        <div class="account-actions">
-          <button class="btn btn-ghost" data-toggle="${a.id}">${a.is_active ? 'Pause' : 'Resume'}</button>
-          <button class="btn btn-ghost" data-settings="${a.id}">Settings</button>
-          <button class="btn btn-ghost" data-remove="${a.id}" style="color:var(--red)">Remove</button>
-        </div>
-        <div class="acc-settings" id="acc-settings-${a.id}" style="display:none"></div>`;
-      box.appendChild(el);
+          <div class="account-meta">connected ${new Date(a.created_at).toLocaleDateString()} · ${healthBadge}</div>
+          <div class="account-actions">
+            <button class="btn btn-ghost" data-toggle="${a.id}">${a.is_active ? 'Pause' : 'Resume'}</button>
+            <button class="btn btn-ghost" data-settings="${a.id}">Settings</button>
+            <button class="btn btn-ghost" data-remove="${a.id}" style="color:var(--red)">Remove</button>
+          </div>
+          <div class="acc-settings" id="acc-settings-${a.id}" style="display:none"></div>`;
+        box.appendChild(el);
+      } catch (e) {
+        console.error('[app] account card render failed:', a.github_username, e);
+      }
     });
+    if (box.childElementCount === 0) {
+      box.innerHTML = '<div class="empty"><div class="big">🔗</div>Your accounts could not be displayed.<br>Refresh or try again.</div>';
+    }
     $$('#accounts-list [data-toggle]').forEach((b) => b.addEventListener('click', async () => {
       await api('/api/accounts/' + b.dataset.toggle + '/activate', { method: 'POST', body: { active: b.textContent === 'Resume' } });
       await Promise.all([loadAccounts(), loadStats()]);
