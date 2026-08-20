@@ -44,7 +44,10 @@
 
   // Animated contribution grid in the hero.
   // It starts empty, fills completely to a healthy green grid, then resets.
+  // A synchronized activity line below (not an overlay) shows the current step.
   const heat = $('#heat');
+  const visStep = $('#vis-step');
+  const visBar = $('#vis-progress-bar');
   const COLS = 24, ROWS = 7;
   const levels = ['', 'l1', 'l2', 'l3', 'l4'];
   const cells = [];
@@ -61,23 +64,39 @@
   }
   // Every cell gets a level so the final grid is fully green and balanced.
   const weights = cells.map(() => [1, 1, 2, 2, 3, 4][Math.floor(Math.random() * 6)]);
+  const steps = [
+    { at: 0.00, text: 'Planning activity' },
+    { at: 0.35, text: 'Writing commits' },
+    { at: 0.70, text: 'Grid getting greener' },
+    { at: 1.00, text: 'Your GitHub stays active automatically' }
+  ];
+  function setStep(fraction) {
+    let current = steps[0];
+    for (const s of steps) { if (fraction >= s.at) current = s; }
+    if (visStep && visStep.textContent !== current.text) visStep.textContent = current.text;
+    if (visBar) visBar.style.width = Math.round(fraction * 100) + '%';
+  }
   function animateGrid() {
     cells.forEach((cell) => {
       cell.classList.remove('l1', 'l2', 'l3', 'l4', 'pop');
     });
     let idx = 0;
+    const total = cells.length;
     const tick = () => {
-      const step = Math.max(1, Math.round(cells.length / 40));
-      for (let k = 0; k < step && idx < cells.length; k++, idx++) {
+      const step = Math.max(1, Math.round(total / 40));
+      for (let k = 0; k < step && idx < total; k++, idx++) {
         const cell = cells[idx];
         cell.classList.add(levels[weights[idx]], 'pop');
       }
-      if (idx < cells.length) {
+      setStep(idx / total);
+      if (idx < total) {
         setTimeout(tick, 30);
       } else {
-        setTimeout(animateGrid, 2800);
+        setStep(1);
+        setTimeout(animateGrid, 3000);
       }
     };
+    setStep(0);
     tick();
   }
   setTimeout(animateGrid, 300);

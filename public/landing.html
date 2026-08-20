@@ -15,6 +15,7 @@
 <body>
 
   <!-- Navbar -->
+  <div class="topbar">
   <nav class="nav" id="nav">
     <a class="nav-brand" href="/">
       <img src="/logo.svg" class="logo-img" alt="GitGreen">
@@ -49,20 +50,21 @@
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track">
       <div class="ticker-group">
-        <span class="tk"><b>30 days free</b> to try</span>
-        <span class="tk">Keep your GitHub <b>green</b> automatically</span>
-        <span class="tk">No credit card required</span>
-        <span class="tk">Pause anytime</span>
+        <span class="tk"><b>30 days free</b> to try</span><span class="sep">/</span>
+        <span class="tk">Keep your GitHub <b>green</b> automatically</span><span class="sep">/</span>
+        <span class="tk">No credit card required</span><span class="sep">/</span>
+        <span class="tk">Pause anytime</span><span class="sep">/</span>
         <span class="tk">Realistic, human-like commits</span>
       </div>
       <div class="ticker-group">
-        <span class="tk"><b>30 days free</b> to try</span>
-        <span class="tk">Keep your GitHub <b>green</b> automatically</span>
-        <span class="tk">No credit card required</span>
-        <span class="tk">Pause anytime</span>
+        <span class="tk"><b>30 days free</b> to try</span><span class="sep">/</span>
+        <span class="tk">Keep your GitHub <b>green</b> automatically</span><span class="sep">/</span>
+        <span class="tk">No credit card required</span><span class="sep">/</span>
+        <span class="tk">Pause anytime</span><span class="sep">/</span>
         <span class="tk">Realistic, human-like commits</span>
       </div>
     </div>
+  </div>
   </div>
 
   <!-- Hero -->
@@ -80,7 +82,10 @@
       <div class="hero-visual reveal d2">
         <div class="vis-head">Contribution activity</div>
         <div class="heat" id="heat"></div>
-        <div class="vis-caption">Filling your grid, one commit at a time</div>
+        <div class="vis-feed">
+          <div class="vis-step" id="vis-step">Planning activity</div>
+          <div class="vis-progress"><span id="vis-progress-bar"></span></div>
+        </div>
       </div>
     </div>
   </header>
