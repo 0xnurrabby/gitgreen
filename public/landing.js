@@ -71,10 +71,15 @@
     setTimeout(() => cell.classList.remove('pop'), 500);
   }, 700);
 
-  // Signed-in users should land in the product, not see the public sign-in page.
+  // Signed-in users should see a "dashboard" button instead of "Sign in".
   fetch('/api/auth/me').then((r) => r.json()).then((me) => {
     if (me && me.user) {
-      location.replace('/app');
+      const signin = $('#nav-signin');
+      const cta = $('#nav-cta');
+      if (signin) signin.style.display = 'none';
+      if (cta) cta.textContent = 'Open dashboard';
+      const mobile = $$('#mobile-menu a.btn');
+      mobile.forEach((a) => { a.textContent = 'Open dashboard'; a.href = '/app'; });
     }
   }).catch(() => {});
 
