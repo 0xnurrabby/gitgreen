@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Docs - IconFinder</title>
+ <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+ <header class="nav"><div class="wrap nav-inner">
+ <a class="brand" href="/">IconFinder</a>
+ <nav><a href="/">Home</a><a href="/about.html">About</a><a href="/docs.html">Docs</a></nav>
+ </div></header>
+ <main class="wrap page">
+ <h1>Documentation</h1>
+ <h2>Getting started</h2>
+ <p>Clone the repository and run it with <code>npm start</code>. The server listens on <code>PORT</code> (default 8080).</p>
+ <h2>Configuration</h2>
+ <p>All options are environment variables:</p>
+ <ul>
+ <li><code>PORT</code> - server port</li>
+ <li><code>HOST</code> - bind address</li>
+ <li><code>VERBOSE</code> - enable verbose logging</li>
+ <li><code>DATA_DIR</code> - where state is stored</li>
+ </ul>
+ <h2>API</h2>
+ <ul>
+ <li><code>GET /api/stats</code> - runtime statistics</li>
+ <li><code>GET /api/health</code> - health check</li>
+ <li><code>GET /api/items</code> - list items</li>
+ <li><code>POST /api/items</code> - create an item</li>
+ </ul>
+ </main>
+ <footer class="footer"><div class="wrap">IconFinder docs.</div></footer>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "gitgreen",
+  "version": "1.0.0",
+  "description": "Keep your GitHub green with realistic human-like contributions",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node --no-warnings server/index.js",
+    "dev": "node --no-warnings --watch server/index.js",
+    "prep": "node --no-warnings scripts/prep.js",
+    "build:auth": "node scripts/build-auth.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@privy-io/react-auth": "^3.37.3",
+    "@privy-io/server-auth": "^1.32.5",
+    "esbuild": "^0.28.2",
+    "express": "^4.19.2",
+    "pg": "^8.23.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  }
+}

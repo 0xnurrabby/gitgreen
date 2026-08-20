@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitGreen - Keep your GitHub green, automatically</title>
+  <link rel="icon" href="/logo.svg">
+  <script>(function(){try{var t=localStorage.getItem('gg-theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <!-- Auth screen -->
+  <div id="auth-screen" class="auth-screen hidden">
+    <div class="auth-card">
+      <div class="logo-wrap">
+        <img src="/logo.svg" class="logo-img" alt="GitGreen">
+      </div>
+      <h1 class="auth-title">Your green grid,<br>on autopilot.</h1>
+      <p class="auth-sub">Sign in with your email, connect your GitHub account, and let realistic activity keep your profile alive every single day.</p>
+
+      <div id="privy-root" class="privy-root"></div>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="app" class="app hidden">
+    <div class="mobile-bar">
+      <a href="/" class="logo-row">
+        <img src="/logo.svg" class="logo-img side" alt="GitGreen">
+        <span class="logo-text">GitGreen</span>
+      </a>
+      <button class="hamburger" id="menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="sidebar-scrim" id="sidebar-scrim"></div>
+    <aside class="sidebar">
+      <a href="/" class="logo-row">
+        <img src="/logo.svg" class="logo-img side" alt="GitGreen">
+        <span class="logo-text">GitGreen</span>
+      </a>
+      <nav class="side-nav">
+        <a class="nav-link active" data-view="dashboard"><span class="ic">◈</span> Dashboard</a>
+        <a class="nav-link" data-view="accounts"><span class="ic">◆</span> Accounts</a>
+        <a class="nav-link" data-view="projects"><span class="ic">▤</span> Projects <span class="pill" id="nav-projects-count"></span></a>
+        <a class="nav-link" data-view="plans"><span class="ic">◷</span> Plans</a>
+        <a class="nav-link" data-view="logs"><span class="ic">▥</span> Activity</a>
+        <a class="nav-link" data-view="plan"><span class="ic">♛</span> Plan <span class="pill" id="nav-plan-name">Free</span></a>
+        <a class="nav-link" data-view="settings"><span class="ic">⚙</span> Settings</a>
+        <a class="nav-link hidden" data-view="admin" id="nav-admin-link" href="/admin"><span class="ic">⚑</span> Admin</a>
+      </nav>
+      <div class="side-foot">
+        <div class="user-chip">
+          <div class="avatar" id="me-avatar">?</div>
+          <div class="who">
+            <strong id="me-name">...</strong>
+            <span id="me-role">on autopilot</span>
+          </div>
+        </div>
+        <button class="theme-toggle" id="theme-btn">☾ Dark mode</button>
+        <button class="btn btn-ghost btn-block" id="logout-btn">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="panel" id="sub-banner" style="display:none">
+        <div class="sub-banner-inner">
+          <span class="sub-banner-icon">♛</span>
+          <div class="sub-banner-text">
+            <strong id="sub-banner-title">Free trial active</strong>
+            <span id="sub-banner-sub" class="muted"></span>
+          </div>
+          <a class="btn btn-primary btn-sm" href="#plan" onclick="go('plan')">Upgrade</a>
+        </div>
+      </div>
+
+      <!-- Dashboard -->
+      <section class="view active" id="view-dashboard">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Overview</p>
+            <h2>Dashboard</h2>
+          </div>
+          <div class="head-actions">
+            <div class="countdown-chip" id="countdown-chip" title="Estimated time until the next commit">
+              <span class="cd-dot"></span>
+              <span class="cd-label">Next commit</span>
+              <span class="cd-time" id="countdown-time">-</span>
+            </div>
+            <select id="run-account" class="select"></select>
+            <button class="btn btn-ghost" id="run-now-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Run now
+            </button>
+            <button class="btn btn-primary" id="run-today-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg>
+              Run today's task
+            </button>
+          </div>
+        </header>
+
+        <div class="stat-grid">
+          <div class="stat-card"><span class="stat-label">Repos created</span><span class="stat-num" id="stat-repos">0</span></div>
+          <div class="stat-card"><span class="stat-label">Total commits</span><span class="stat-num" id="stat-commits">0</span></div>
+          <div class="stat-card"><span class="stat-label">Current streak</span><span class="stat-num" id="stat-streak">0<span class="stat-unit">days</span></span></div>
+          <div class="stat-card"><span class="stat-label">Events logged</span><span class="stat-num" id="stat-events">0</span></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Contribution grid</h3>
+            <span class="muted" id="heat-range"></span>
+          </div>
+          <div id="heatmap" class="heatmap"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Next 14 days</h3>
+            <button class="link-btn" data-goto="plans">View plans</button>
+          </div>
+          <div id="upcoming" class="upcoming"></div>
+        </div>
+      </section>
+
+      <!-- Accounts -->
+      <section class="view" id="view-accounts">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Connections</p>
+            <h2>GitHub accounts</h2>
+          </div>
+          <button class="btn btn-primary" id="add-account-btn">+ Add account</button>
+        </header>
+        <div id="accounts-list" class="accounts-list"></div>
+      </section>
+
+      <!-- Projects -->
+      <section class="view" id="view-projects">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Library</p>
+            <h2>365 projects</h2>
+          </div>
+          <div class="search-box">
+            <input type="text" id="proj-search" placeholder="Search projects...">
+          </div>
+        </header>
+        <div class="filter-row" id="proj-filters"></div>
+        <div id="projects-grid" class="projects-grid"></div>
+      </section>
+
+      <!-- Plans -->
+      <section class="view" id="view-plans">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Schedule</p>
+            <h2>Planned activity</h2>
+          </div>
+          <button class="btn btn-ghost" id="regenerate-btn">Regenerate</button>
+        </header>
+        <div id="plans-list" class="plans-list"></div>
+      </section>
+
+      <!-- Logs -->
+      <section class="view" id="view-logs">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Live feed</p>
+            <h2>Activity log</h2>
+          </div>
+          <button class="btn btn-ghost" id="refresh-logs">Refresh</button>
+        </header>
+        <div id="logs" class="logs"></div>
+      </section>
+
+      <!-- Plan & Subscription -->
+      <section class="view" id="view-plan">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Subscription</p>
+            <h2>Your plan</h2>
+          </div>
+          <button class="btn btn-ghost" id="plan-refresh">Refresh</button>
+        </header>
+
+        <div id="plan-current" class="plan-current"></div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Choose a plan</h3>
+            <span class="muted">Pay once a month with crypto. No cards, no banks. Upgrade anytime - you only pay the price difference.</span>
+          </div>
+          <div id="plan-grid" class="plan-grid"></div>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section class="view" id="view-settings">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Tuning</p>
+            <h2>Settings</h2>
+          </div>
+        </header>
+
+        <div class="panel">
+          <div class="setting-row">
+            <div><h4>Autopilot scheduler</h4><p class="muted">Let the app plan and push activity on its own.</p></div>
+            <label class="switch"><input type="checkbox" id="set-enabled"><span></span></label>
+          </div>
+          <div class="setting-row">
+            <div><h4>Full day share</h4><p class="muted">How often a day gets a full random amount. Every day gets commits, so the grid never breaks.</p></div>
+            <div class="range-wrap"><input type="range" id="set-activepct" min="50" max="100"><output id="out-activepct"></output></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Token modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card modal-wide">
+      <div class="modal-head">
+        <h3>Connect a GitHub account</h3>
+        <button class="modal-close" data-close="modal">&times;</button>
+      </div>
+      <p class="muted">Follow these steps to create a token and connect. It takes about a minute and you only do it once. Just tick <b>repo</b> and <b>workflow</b> below and you'll never hit a push error.</p>
+
+      <div class="guide">
+        <div class="guide-step">
+          <span class="guide-num">1</span>
+          <div>
+            <h4>Open the token page</h4>
+            <p class="muted">Click the button below. GitHub opens in a new tab.</p>
+            <a class="btn btn-ghost guide-link" href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=gitgreen" target="_blank" rel="noopener">
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+              github.com/settings/tokens/new
+            </a>
+            <p class="muted" style="margin-top:6px">The button pre-ticks <code>repo</code> and <code>workflow</code> for you, so you just need to click generate.</p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <span class="guide-num">2</span>
+          <div>
+            <h4>Name it &amp; set "No expiration"</h4>
+            <p class="muted">Under <b>Note</b> type anything, e.g. <code>gitgreen</code>. Under <b>Expiration</b> choose</p>
+            <span class="guide-tip">No expiration</span>
+            <p class="muted">Recommended, the token never silently stops working, so your autopilot never breaks in the middle of a streak.</p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <span class="guide-num">3</span>
+          <div>
+            <h4>Tick the scopes you need</h4>
+            <div class="scope-list">
+              <label class="scope-row">
+                <input type="checkbox" checked disabled>
+                <div>
+                  <code>repo</code> <span class="badge on">required</span>
+                  <p class="muted">Full control of repositories. Lets GitGreen create repos and push commits for you. Always tick this.</p>
+                </div>
+              </label>
+              <label class="scope-row">
+                <input type="checkbox" checked disabled>
+                <div>
+                  <code>workflow</code> <span class="badge" style="background:var(--green-dim);color:var(--green)">recommended</span>
+                  <p class="muted"><b>Tick this too.</b> It lets GitGreen push to any repo that contains a GitHub Actions workflow file. Without it you'll see a <code>workflow scope</code> push error. Tick it once and you'll never hit that error.</p>
+                </div>
+              </label>
+            </div>
+            <p class="muted"><b>Tip:</b> <code>repo</code> + <code>workflow</code> covers everything GitGreen needs and avoids all push errors. <a href="https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps" target="_blank" rel="noopener">What are scopes? Read GitHub's guide ↗</a></p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <span class="guide-num">4</span>
+          <div>
+            <h4>Generate, copy &amp; connect</h4>
+            <p class="muted">Click <b>Generate token</b>, copy the <code>ghp_…</code> value (shown only once), paste it below and hit Connect.</p>
+          </div>
+        </div>
+      </div>
+
+      <label class="field"><span>Token</span><input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"></label>
+      <div class="token-check-row">
+        <button class="btn btn-ghost" id="check-token-btn">✓ Check token</button>
+        <span class="token-check-state" id="token-check-state"></span>
+      </div>
+      <div class="form-msg" id="token-msg"></div>
+      <div id="scope-result" class="scope-result hidden"></div>
+      <button class="btn btn-primary btn-block" id="connect-btn" disabled>Connect</button>
+      <p class="auth-hint">Your token is encrypted and stored on our server; it is never shown again.</p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Crypto payment modal -->
+  <div id="pay-modal" class="modal hidden">
+    <div class="modal-card modal-wide" style="max-width:520px">
+      <div class="modal-head">
+        <h3 id="pay-modal-title">Pay with crypto</h3>
+        <button class="modal-close" data-close="pay-modal">&times;</button>
+      </div>
+      <div id="pay-body">
+        <!-- Stage 1: confirm & generate -->
+        <div id="pay-choose">
+          <div class="pay-plan-row" id="pay-plan-row"></div>
+          <div class="pay-steps">
+            <div>1. We create a secure crypto payment link for you.</div>
+            <div>2. You open the link and pay with any supported coin (BTC, ETH, USDT, LTC, SOL and more).</div>
+            <div>3. Your plan activates automatically - even if you close this page.</div>
+          </div>
+          <div class="pay-actions" style="margin-top:8px">
+            <button class="btn btn-ghost" id="pay-close2">Close</button>
+            <button class="btn btn-primary" id="pay-generate">Generate payment link</button>
+          </div>
+        </div>
+
+        <!-- Stage 2: pay via the link -->
+        <div id="pay-send" class="hidden">
+          <div class="pay-plan-row" id="pay-plan-row2"></div>
+          <div class="pay-status-line" id="pay-status-line">
+            <span class="spinner"></span> Waiting for payment...
+          </div>
+
+          <div class="pay-link-box">
+            <div class="pay-link-ic">₿</div>
+            <div class="pay-link-text">
+              <strong>Your payment link is ready</strong>
+              <span class="muted">Open it and pay with any crypto. We'll activate your plan as soon as it's confirmed.</span>
+            </div>
+          </div>
+
+          <div class="pay-actions">
+            <button class="btn btn-ghost" id="pay-close">Close</button>
+            <a class="btn btn-primary" id="pay-open" href="#" target="_blank" rel="noopener">Open payment page ↗</a>
+            <button class="btn btn-ghost" id="pay-check">Check status</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/privy-auth.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

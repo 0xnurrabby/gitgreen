@@ -1,0 +1,27 @@
+/* Theme support for IconFinder */
+:root {
+ --paper: #ffffff;
+ --ink: #171b26;
+ --line: #e6e8ef;
+ --accent: #5b4dff;
+ --muted: #5b6472;
+}
+.dark {
+ --paper: #0f1222;
+ --ink: #e7e9f4;
+ --line: #232849;
+ --muted: #8b93b0;
+}
+.theme-toggle {
+ margin-left: 16px;
+ border: 1px solid var(--line);
+ border-radius: 8px;
+ padding: 6px 12px;
+ background: transparent;
+ color: var(--ink);
+ cursor: pointer;
+}
+.page { padding: 48px 0 70px; max-width: 760px; }
+.page h1 { font-size: 34px; letter-spacing: -.02em; }
+.page h2 { margin-top: 28px; font-size: 20px; }
+.page p, .page li { color: var(--muted); }

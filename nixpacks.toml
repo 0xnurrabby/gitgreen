@@ -1,0 +1,13 @@
+# Nixpacks config for Railway deployment.
+# - Installs git so the scheduler can clone/push repositories.
+# - Installs production deps only (no dev deps, no build).
+# - Starts the Express server with `npm start`.
+
+[phases.setup]
+aptPkgs = ["git"]
+
+[phases.install]
+cmds = ["npm ci --omit=dev"]
+
+[start]
+cmd = "node --no-warnings server/index.js"

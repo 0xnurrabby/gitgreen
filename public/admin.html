@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitGreen Admin</title>
+  <link rel="icon" href="/logo.svg">
+  <script>(function(){try{var t=localStorage.getItem('gg-theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <!-- Admin unlock screen (password required to open the panel) -->
+  <div id="admin-lock" class="auth-screen hidden">
+    <div class="auth-card">
+      <div class="logo-wrap">
+        <img src="/logo.svg" class="logo-img" alt="GitGreen">
+      </div>
+      <h1 class="auth-title">Admin access</h1>
+      <p class="auth-sub">This account is registered as an admin. Enter the admin password to open the control panel.</p>
+      <label class="field"><span>Admin password</span><input type="password" id="admin-password" placeholder="••••••••" autocomplete="current-password"></label>
+      <div class="form-msg" id="admin-lock-msg"></div>
+      <button class="btn btn-primary btn-block" id="admin-unlock-btn">Unlock panel</button>
+      <a class="btn btn-ghost btn-block" style="margin-top:10px" href="/app">← Back to app</a>
+    </div>
+  </div>
+
+  <div class="admin-app">
+    <div class="mobile-bar admin-mobile-bar">
+      <a href="/" class="logo-row">
+        <img src="/logo.svg" class="logo-img side" alt="GitGreen">
+        <span class="logo-text">GitGreen <span class="admin-badge">Admin</span></span>
+      </a>
+      <button class="hamburger" id="admin-menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="sidebar-scrim" id="admin-sidebar-scrim"></div>
+    <aside class="admin-side">
+      <a href="/" class="logo-row admin-logo-row">
+        <img src="/logo.svg" class="logo-img side" alt="GitGreen">
+        <div>
+          <span class="logo-text">GitGreen</span>
+          <span class="admin-badge">Admin</span>
+        </div>
+      </a>
+      <nav class="side-nav admin-nav">
+        <a class="nav-link active" data-admin-view="overview"><span class="ic">◈</span> Overview</a>
+        <a class="nav-link" data-admin-view="users"><span class="ic">▤</span> Users <span class="pill" id="admin-users-count"></span></a>
+        <a class="nav-link" data-admin-view="accounts"><span class="ic">◆</span> GitHub accounts</a>
+      </nav>
+      <div class="side-foot">
+        <div class="user-chip">
+          <div class="avatar" id="admin-me-avatar">?</div>
+          <div class="who">
+            <strong id="admin-me-name">...</strong>
+            <span>admin panel</span>
+          </div>
+        </div>
+        <button class="theme-toggle" id="admin-theme-btn">☾ Dark mode</button>
+        <a class="btn btn-ghost btn-block" href="/app">← Back to app</a>
+        <button class="btn btn-ghost btn-block" id="admin-logout-btn">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <!-- Overview -->
+      <section class="admin-view active" id="admin-view-overview">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Control room</p>
+            <h2>Overview</h2>
+          </div>
+          <button class="btn btn-ghost" id="admin-refresh">Refresh</button>
+        </header>
+
+        <div class="stat-grid" id="admin-stats"></div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>All users</h3>
+            <div class="search-box"><input type="text" id="admin-user-search" placeholder="Search users..."></div>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="admin-users-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Created</th>
+                  <th>Autopilot</th>
+                  <th>Accounts</th>
+                  <th>Plan</th>
+                  <th>Repos</th>
+                  <th>Commits</th>
+                  <th>Events</th>
+                  <th>Last active</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Users list -->
+      <section class="admin-view" id="admin-view-users">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Everyone</p>
+            <h2>Users</h2>
+          </div>
+          <div class="search-box"><input type="text" id="admin-user-search-2" placeholder="Search users..."></div>
+        </header>
+        <div class="admin-user-cards" id="admin-user-cards"></div>
+      </section>
+
+      <!-- User detail -->
+      <section class="admin-view" id="admin-view-detail">
+        <header class="view-head">
+          <div>
+            <button class="link-btn" id="admin-back">← Back</button>
+            <p class="kicker">User detail</p>
+            <h2 id="admin-detail-title">...</h2>
+          </div>
+          <div class="head-actions" id="admin-detail-actions"></div>
+        </header>
+
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-tab="accounts">Accounts</button>
+          <button class="admin-tab" data-tab="projects">Projects</button>
+          <button class="admin-tab" data-tab="plans">Plans</button>
+          <button class="admin-tab" data-tab="logs">Activity</button>
+          <button class="admin-tab" data-tab="settings">Settings</button>
+          <button class="admin-tab" data-tab="queue">Today's queue</button>
+          <button class="admin-tab" data-tab="subscription">Subscription</button>
+        </div>
+
+        <div id="admin-tab-accounts" class="admin-tab-pane active"></div>
+        <div id="admin-tab-projects" class="admin-tab-pane"></div>
+        <div id="admin-tab-plans" class="admin-tab-pane"></div>
+        <div id="admin-tab-logs" class="admin-tab-pane"></div>
+        <div id="admin-tab-settings" class="admin-tab-pane"></div>
+        <div id="admin-tab-queue" class="admin-tab-pane"></div>
+        <div id="admin-tab-subscription" class="admin-tab-pane"></div>
+      </section>
+
+      <!-- All GitHub accounts (across all users) -->
+      <section class="admin-view" id="admin-view-accounts">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Every connection</p>
+            <h2>GitHub accounts</h2>
+          </div>
+          <div class="search-box"><input type="text" id="admin-acc-search" placeholder="Search by GitHub user or owner email..."></div>
+        </header>
+        <div class="admin-acc-list" id="admin-acc-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>

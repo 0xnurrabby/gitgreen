@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitGreen - Keep your GitHub green, automatically</title>
+  <meta name="description" content="GitGreen keeps your GitHub contribution grid alive with realistic, human-like activity, automatically, every single day.">
+  <link rel="icon" href="/logo.svg">
+  <script>(function(){try{var t=localStorage.getItem('gg-theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/landing.css">
+</head>
+<body>
+  <div class="bg-glow">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="glow glow-3"></div>
+  </div>
+  <div class="grid-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="nav" id="nav">
+    <a class="nav-brand" href="/">
+      <img src="/logo.svg" class="logo-img" alt="GitGreen">
+      <span class="brand-name">Git<em>Green</em></span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#stats">Stats</a>
+      <a href="#cta">Get started</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" id="nav-dashboard" href="/app" style="display:none">Open dashboard</a>
+      <a class="btn btn-ghost" id="nav-signin" href="/app">Sign in</a>
+      <a class="btn btn-primary" id="nav-cta" href="/app">Get started</a>
+      <button class="theme-toggle" id="theme-btn" aria-label="Toggle theme" title="Toggle light/dark theme"></button>
+      <button class="hamburger" id="menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#how">How it works</a>
+    <a href="#features">Features</a>
+    <a href="#stats">Stats</a>
+    <a href="#cta">Get started</a>
+    <a class="btn btn-primary" href="/app">Sign in / Get started</a>
+  </div>
+
+  <!-- Hero -->
+  <header class="hero">
+    <span class="hero-badge reveal">
+      <span class="live"><span class="pulse"></span> Live on autopilot</span>
+      &nbsp;·&nbsp; Built for real developers
+    </span>
+    <h1 class="reveal d1">Your GitHub stays <span class="grad-text">green</span>,<br>while you <span class="grad-text-green">build</span> in peace.</h1>
+    <p class="sub reveal d2">GitGreen plans and pushes realistic, human-looking commits to your GitHub every single day, so your contribution grid never goes cold, and your profile always looks active and professional.</p>
+    <div class="hero-cta reveal d2">
+      <a class="btn btn-green btn-lg" href="/app">Start for free →</a>
+      <a class="btn btn-ghost btn-lg" href="#how">See how it works</a>
+    </div>
+    <p class="hero-note reveal d3">No credit card &nbsp;·&nbsp; <b>60-second setup</b> &nbsp;·&nbsp; Pause anytime</p>
+
+    <!-- Animated contribution grid visual -->
+    <div class="hero-visual reveal d3">
+      <div class="float-card fc-streak">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+        <div>
+          <div class="t">Streak +1</div>
+          <div class="s">212-day streak alive</div>
+        </div>
+      </div>
+      <div class="float-card fc-commit">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg></span>
+        <div>
+          <div class="t">Commit pushed</div>
+          <div class="s">github.com/you/repo</div>
+        </div>
+      </div>
+      <div class="hero-frame" id="hero-frame">
+        <div class="frame-top">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="title">github.com/you · contributions</span>
+        </div>
+        <div class="heat-cols" id="heat"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- How it works -->
+  <section class="section" id="how">
+    <div class="section-head reveal">
+      <span class="eyebrow"><span class="dot"></span> How it works</span>
+      <h2 class="section-title">Up and running in <span class="grad-text">three easy steps</span></h2>
+      <p class="section-sub">No complex setup, no risk. Connect once and let the autopilot take over.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <h3>Sign in with your email</h3>
+        <p>Use a one-time code sent to your inbox. No password, no social login required. Fast and private.</p>
+        <span class="arrow">→</span>
+      </div>
+      <div class="step reveal d1">
+        <div class="step-num">02</div>
+        <h3>Connect your GitHub</h3>
+        <p>Paste a token with repo access. GitGreen uses it to create repositories and push commits on your behalf.</p>
+        <span class="arrow">→</span>
+      </div>
+      <div class="step reveal d2">
+        <div class="step-num">03</div>
+        <h3>Let the autopilot run</h3>
+        <p>It plans realistic activity and commits for you, in the morning, afternoon and evening, while you focus on real work.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-head reveal">
+      <span class="eyebrow"><span class="dot"></span> Features</span>
+      <h2 class="section-title">Everything you need to <span class="grad-text">look consistently active</span></h2>
+      <p class="section-sub">Purpose-built so your GitHub profile always tells a great story.</p>
+    </div>
+    <div class="features">
+      <div class="feature reveal">
+        <div class="f-ic purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <h3>Realistic activity</h3>
+        <p>Commits at natural times with human-like intensity, from light days to heavy days and everything in between.</p>
+      </div>
+      <div class="feature reveal d1">
+        <div class="f-ic green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+        <h3>365 ready-made projects</h3>
+        <p>A library of real, substantial projects (CLIs, tools, bots, dashboards) that grow over time toward thousands of lines.</p>
+      </div>
+      <div class="feature reveal d2">
+        <div class="f-ic cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h3>Plans like a person</h3>
+        <p>14-day schedules with a natural spread, revisited repos, and thoughtful commit messages with no AI fingerprints.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="f-ic pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <h3>Never misses a day</h3>
+        <p>If your machine was off, recent days catch up with backdated timestamps, so your grid never has a gap.</p>
+      </div>
+      <div class="feature reveal d1">
+        <div class="f-ic amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Private &amp; safe</h3>
+        <p>Your GitHub token is encrypted and never shown again. Pause or remove any account in one click.</p>
+      </div>
+      <div class="feature reveal d2">
+        <div class="f-ic purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <h3>One-click run</h3>
+        <p>Run now or schedule today's task across all your accounts. A live countdown shows exactly when the next commit lands.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="section-head reveal">
+      <span class="eyebrow"><span class="dot"></span> Pricing</span>
+      <h2 class="section-title">Simple pricing. <span class="grad-text">Real results.</span></h2>
+      <p class="section-sub">Start free for a full month. Upgrade whenever you want - you only pay the difference, and your billing period stays the same.</p>
+    </div>
+
+    <div class="pricing-grid" id="pricing-grid"></div>
+
+    <p class="pricing-note reveal">Pay once a month with crypto (BTC, ETH, USDT and 300+ coins). No credit card, no bank account, no hidden fees. Cancel anytime - your accounts simply pause when the period ends.</p>
+  </section>
+
+  <!-- Stats -->
+  <section class="section" id="stats">
+    <div class="stats-band reveal">
+      <div class="stat"><div class="n green">365</div><div class="l">ready-made projects</div></div>
+      <div class="stat"><div class="n purple">14-day</div><div class="l">auto-generated plans</div></div>
+      <div class="stat"><div class="n cyan">100%</div><div class="l">human-like activity</div></div>
+      <div class="stat"><div class="n green">24/7</div><div class="l">autopilot running</div></div>
+    </div>
+
+    <div class="quote reveal">
+      <div class="quote-mark">&ldquo;</div>
+      <p>My GitHub grid went from empty to a healthy, professional-looking streak, without me lifting a finger.</p>
+      <div class="who"><b>GitGreen</b> · designed for developers who build in private and shine in public</div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" id="cta">
+    <div class="cta-box reveal">
+      <h2>Ready to keep your grid <span class="grad-text-green">green</span>?</h2>
+      <p>Join GitGreen and let realistic activity keep your profile alive every single day, automatically.</p>
+      <a class="btn btn-green btn-lg" href="/app">Get started, it's free</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <a class="brand" href="/">
+        <img src="/logo.svg" alt="GitGreen">
+        <span>Git<em style="font-style:normal;color:var(--green)">Green</em></span>
+      </a>
+      <div class="footer-links">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#cta">Get started</a>
+        <a href="/app">Dashboard</a>
+        <a href="/admin">Admin</a>
+      </div>
+    </div>
+    <div class="footer-copy">© 2026 GitGreen. Keep your GitHub green, automatically.</div>
+  </footer>
+
+  <script src="/landing.js"></script>
+</body>
+</html>

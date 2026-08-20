@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="220" height="220">
+  <defs>
+    <!-- Soft Green Glow Filter -->
+    <filter id="green-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- GitHub Contribution Grid Pattern -->
+    <pattern id="contrib-grid" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="#161b22" />
+      <rect x="2" y="2" width="12" height="12" rx="2" fill="#39d353" opacity="0.9" />
+    </pattern>
+  </defs>
+
+  <!-- Light Background Circle with Glow -->
+  <circle cx="250" cy="250" r="230" fill="#f6f8fa" stroke="#2ea043" stroke-width="3" filter="url(#green-glow)" />
+
+  <!-- Octocat filled directly with the contribution grid -->
+  <path
+    d="M250 40C134 40 40 134 40 250c0 93 60 172 144 200 11 2 14-5 14-10v-36c-59 13-71-28-71-28-10-24-24-31-24-31-19-13 1-13 1-13 21 2 32 22 32 22 19 32 49 23 61 17 2-14 7-23 14-28-47-5-96-23-96-104 0-23 8-42 22-57-2-5-10-27 2-56 0 0 18-6 58 22 17-5 35-7 53-7s36 2 53 7c40-28 58-22 58-22 12 29 4 51 2 56 14 15 22 34 22 57 0 81-49 99-96 104 8 7 15 20 15 40v60c0 5 4 12 14 10 84-28 144-107 144-200 0-116-94-210-210-210z"
+    fill="url(#contrib-grid)"
+  />
+
+  <!-- Face: eyes with animated multi-color pupils, nose and mouth -->
+  <g>
+    <!-- Left eye (sclera) -->
+    <rect x="186" y="160" width="56" height="56" rx="14" fill="#ffffff" stroke="#000000" stroke-width="5" />
+    <!-- Left pupil (moni) - orbits right/up/left/down and changes color -->
+    <circle r="16">
+      <animate attributeName="cx" values="225;214;203;214;225" dur="5s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
+      <animate attributeName="cy" values="188;177;188;199;188" dur="5s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
+      <animate attributeName="fill" values="#39d353;#58a6ff;#d29922;#d055bf;#39d353" dur="5s" repeatCount="indefinite" />
+    </circle>
+    <!-- Left eye shine -->
+    <circle cx="208" cy="176" r="5" fill="#ffffff" opacity="0.95" />
+
+    <!-- Right eye (sclera) -->
+    <rect x="258" y="160" width="56" height="56" rx="14" fill="#ffffff" stroke="#000000" stroke-width="5" />
+    <!-- Right pupil (moni) - orbits and changes color -->
+    <circle r="16">
+      <animate attributeName="cx" values="297;286;275;286;297" dur="5s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
+      <animate attributeName="cy" values="188;177;188;199;188" dur="5s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.25;0.5;0.75;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" />
+      <animate attributeName="fill" values="#39d353;#58a6ff;#d29922;#d055bf;#39d353" dur="5s" repeatCount="indefinite" />
+    </circle>
+    <!-- Right eye shine -->
+    <circle cx="280" cy="176" r="5" fill="#ffffff" opacity="0.95" />
+
+    <!-- Nose -->
+    <path d="M250 226 L268 248 L232 248 Z" fill="#000000" />
+    <!-- Mouth (smile) -->
+    <path d="M210 280 Q250 314 290 280" fill="none" stroke="#000000" stroke-width="10" stroke-linecap="round" />
+  </g>
+
+  <!-- Project Text Badge (light) -->
+  <rect x="120" y="390" width="260" height="42" rx="21" fill="#ffffff" stroke="#39d353" stroke-width="2" />
+  <text
+    x="250"
+    y="418"
+    text-anchor="middle"
+    fill="#1a7f37"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    font-size="20"
+    font-weight="800"
+    letter-spacing="2.5"
+  >
+    GITHUB GREEN
+  </text>
+</svg>
