@@ -42,9 +42,10 @@
   }, { threshold: 0.12 });
   $$('.reveal').forEach((el) => io.observe(el));
 
-  // Animated contribution grid in the hero
+  // Animated contribution grid in the hero.
+  // It starts empty and gradually fills to a healthy green grid, then resets.
   const heat = $('#heat');
-  const COLS = 22, ROWS = 7;
+  const COLS = 26, ROWS = 7;
   const levels = ['', 'l1', 'l2', 'l3', 'l4'];
   const cells = [];
   for (let c = 0; c < COLS; c++) {
@@ -58,18 +59,45 @@
     }
     heat.appendChild(col);
   }
-  // Randomly light cells to look like a real grid
-  for (const cell of cells) {
-    if (Math.random() < 0.62) cell.classList.add(levels[Math.floor(Math.random() * levels.length)]);
+  const dayLabel = $('#vis-day-label');
+  // Weight cells so some days stay light and a few are intense, like real use.
+  const weights = cells.map(() => [0, 0, 0, 1, 1, 2, 3][Math.floor(Math.random() * 7)]);
+  let lit = 0;
+  function animateGrid() {
+    lit = 0;
+    cells.forEach((cell, i) => {
+      cell.classList.remove('l1', 'l2', 'l3', 'l4', 'pop');
+      if (weights[i]) cell.style.opacity = '0';
+    });
+    if (dayLabel) dayLabel.textContent = 'Week 1 · getting started';
+    let idx = 0;
+    const tick = () => {
+      const step = Math.max(1, Math.round(cells.length / 46));
+      for (let k = 0; k < step && idx < cells.length; k++, idx++) {
+        const cell = cells[idx];
+        const w = weights[idx];
+        if (w) {
+          cell.classList.add(levels[w], 'pop');
+          cell.style.opacity = '1';
+          lit++;
+        }
+      }
+      const week = Math.min(8, 1 + Math.floor(idx / (cells.length / 8)));
+      if (dayLabel) {
+        dayLabel.textContent = week >= 8 ? 'A healthy, active grid' : 'Week ' + week + ' · filling up';
+      }
+      if (idx < cells.length) {
+        setTimeout(tick, 34);
+      } else {
+        setTimeout(() => {
+          if (dayLabel) dayLabel.textContent = 'Never misses a day';
+          setTimeout(animateGrid, 2600);
+        }, 700);
+      }
+    };
+    tick();
   }
-  // Periodic "commit" pulses that light up a cell and pop
-  setInterval(() => {
-    const cell = cells[Math.floor(Math.random() * cells.length)];
-    cell.classList.remove('l1', 'l2', 'l3', 'l4', 'pop');
-    void cell.offsetWidth;
-    cell.classList.add('l4', 'pop');
-    setTimeout(() => cell.classList.remove('pop'), 500);
-  }, 700);
+  setTimeout(animateGrid, 400);
 
   // Signed-in users should see a "dashboard" button instead of "Sign in".
   fetch('/api/auth/me').then((r) => r.json()).then((me) => {

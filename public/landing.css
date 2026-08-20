@@ -150,25 +150,31 @@ img { max-width: 100%; display: block; }
 .d3 { transition-delay: .24s; }
 
 /* Hero */
-.hero { max-width: 1240px; margin: 0 auto; padding: 70px 28px 40px; }
+.hero { max-width: 1240px; margin: 0 auto; padding: 60px 28px 40px; }
 .hero-inner { display: grid; grid-template-columns: 1.05fr .95fr; gap: 60px; align-items: center; }
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 10px; padding: 9px 18px; border-radius: 999px;
-  background: var(--panel-2); border: 1px solid var(--line);
-  font-size: 13px; color: var(--muted); font-weight: 600;
+
+/* Trial strip */
+.trial-strip {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  max-width: 560px; margin: 0 auto 46px; padding: 11px 22px; border-radius: 999px;
+  background: var(--green-soft); border: 1px solid rgba(46,160,67,.25);
+  color: var(--green-2); font-size: 14px; font-weight: 500;
+  overflow: hidden; position: relative;
 }
-.hero-badge .live { display: inline-flex; align-items: center; }
-.hero-badge .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2s infinite; margin-right: 8px; }
+[data-theme="dark"] .trial-strip { color: var(--green); }
+.trial-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 1.6s infinite; }
+.trial-strip b { font-weight: 800; }
+.trial-arrow { font-size: 16px; animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
-.hero-kicker { display: flex; align-items: center; gap: 9px; color: var(--green-2); font-size: 14px; font-weight: 700; }
-.hero-kicker .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2s infinite; }
+
 .hero h1 {
-  font-family: var(--display); font-size: clamp(38px, 5.4vw, 60px); line-height: 1.06;
-  letter-spacing: -.03em; font-weight: 700; margin: 22px 0 20px;
+  font-family: var(--display); font-size: clamp(36px, 5vw, 56px); line-height: 1.08;
+  letter-spacing: -.03em; font-weight: 700; margin: 0 0 20px;
 }
-.hero p.sub { color: var(--muted); font-size: 17px; max-width: 540px; }
-.hero-cta { display: flex; gap: 14px; margin-top: 30px; flex-wrap: wrap; }
-.hero-trust { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 22px; color: var(--muted); font-size: 13.5px; font-weight: 500; }
+.hero p.sub { color: var(--muted); font-size: 17px; max-width: 520px; line-height: 1.65; }
+.hero-cta { display: flex; gap: 14px; margin-top: 28px; flex-wrap: wrap; }
+.hero-trust { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 24px; color: var(--muted); font-size: 13.5px; font-weight: 500; }
 .hero-trust span { color: var(--muted); }
 
 /* Hero visual */
@@ -207,21 +213,6 @@ img { max-width: 100%; display: block; }
 .legend-cell.l2 { background: #40c463; }
 .legend-cell.l3 { background: #30a14e; }
 .legend-cell.l4 { background: #216e39; }
-
-/* Float cards */
-.float-card {
-  position: absolute; display: flex; align-items: center; gap: 12px;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
-  padding: 14px 18px; box-shadow: var(--shadow); animation: float 6s ease-in-out infinite;
-}
-.float-card .ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; font-weight: 800; color: var(--green-2); }
-.float-card .t { font-weight: 700; font-size: 14px; }
-.float-card .s { font-size: 12px; color: var(--muted); }
-.fc-streak { top: -22px; left: -18px; }
-.fc-streak .ic { background: var(--green-soft); }
-.fc-commit { bottom: -22px; right: -18px; animation-delay: 1.5s; }
-.fc-commit .ic { background: rgba(91,77,255,.12); }
-@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 
 /* How it works */
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
@@ -345,5 +336,4 @@ img { max-width: 100%; display: block; }
   .nav { padding: 14px 18px; }
   .pricing-grid { grid-template-columns: 1fr; }
   .hero-frame { padding: 18px 12px; }
-  .float-card { display: none; }
 }

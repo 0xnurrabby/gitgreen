@@ -52,17 +52,22 @@
 
   <!-- Hero -->
   <header class="hero">
+    <div class="trial-strip reveal">
+      <span class="trial-pulse"></span>
+      <span class="trial-text"><b>30 days</b> completely free to try</span>
+      <span class="trial-arrow">→</span>
+    </div>
+
     <div class="hero-inner">
       <div class="hero-copy">
-        <p class="hero-kicker reveal"><span class="pulse"></span> GitHub activity, handled automatically</p>
-        <h1 class="reveal d1">Keep your GitHub <span class="grad-text-green">active</span>.<br>Build without the daily upkeep.</h1>
-        <p class="sub reveal d2">GitGreen creates a simple activity plan and pushes commits to your connected GitHub account each day. Your profile stays active while you focus on real work.</p>
+        <h1 class="reveal d1">Keep your GitHub <span class="grad-text-green">active</span>,<br>while you <span class="grad-text">build</span>.</h1>
+        <p class="sub reveal d2">GitGreen plans and runs realistic activity on your GitHub each day, so your profile stays green while you focus on real work.</p>
         <div class="hero-cta reveal d2">
-          <a class="btn btn-green btn-lg" href="/app">Try 30 days completely free →</a>
-          <a class="btn btn-ghost btn-lg" href="#how">See how it works</a>
+          <a class="btn btn-green btn-lg" href="/app">Get started free →</a>
+          <a class="btn btn-ghost btn-lg" href="#how">How it works</a>
         </div>
         <div class="hero-trust reveal d3">
-          <span>✓ 30 days completely free</span>
+          <span>✓ No credit card</span>
           <span>✓ 60-second setup</span>
           <span>✓ Pause anytime</span>
         </div>
@@ -75,8 +80,8 @@
             <span class="title">github.com/you · contributions</span>
           </div>
           <div class="visual-status">
-            <div><span class="status-dot"></span><span>Autopilot is running</span></div>
-            <strong>Today · 3 commits planned</strong>
+            <div><span class="status-dot"></span><span>Autopilot running</span></div>
+            <strong id="vis-day-label">Weeks fill automatically</strong>
           </div>
           <div class="heat-wrap">
             <div class="heat-cols" id="heat"></div>
@@ -89,20 +94,6 @@
             <span class="legend-cell l3"></span>
             <span class="legend-cell l4"></span>
             <span class="legend">More</span>
-          </div>
-        </div>
-        <div class="float-card fc-streak">
-          <span class="ic">+</span>
-          <div>
-            <div class="t">212-day streak</div>
-            <div class="s">still alive</div>
-          </div>
-        </div>
-        <div class="float-card fc-commit">
-          <span class="ic">✓</span>
-          <div>
-            <div class="t">Commit pushed</div>
-            <div class="s">2 min ago</div>
           </div>
         </div>
       </div>
