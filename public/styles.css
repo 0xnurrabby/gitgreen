@@ -675,3 +675,40 @@ a.logo-row:hover { text-decoration: none; }
 .repo-main strong { font-size: 14px; }
 .repo-main a { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
 .repo-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--dim); font-family: var(--mono); }
+
+/* Fixed floating Telegram contact button (dashboard) */
+.tg-float {
+  position: fixed; bottom: 22px; right: 22px; z-index: 999;
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center; color: #fff;
+  background: #229ed9; box-shadow: 0 8px 26px rgba(34,158,217,.45);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.tg-float:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 12px 30px rgba(34,158,217,.55); }
+.tg-float::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid #229ed9; animation: tg-pulse 2s ease-out infinite;
+}
+@keyframes tg-pulse {
+  0% { transform: scale(1); opacity: .6; }
+  80%, 100% { transform: scale(1.7); opacity: 0; }
+}
+.tg-tip {
+  position: absolute; right: 66px; top: 50%; transform: translateY(-50%);
+  background: var(--ink); color: var(--bg); font-size: 12.5px; font-weight: 600;
+  padding: 6px 11px; border-radius: 8px; white-space: nowrap; opacity: 0;
+  pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+}
+.tg-float:hover .tg-tip { opacity: 1; transform: translateY(-50%) translateX(-4px); }
+
+/* Floating open-source badge (dashboard sidebar) */
+.footer-open.app-open {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; color: var(--muted);
+}
+.footer-open.app-open svg { color: var(--ink); }
+.footer-open.app-open:hover { color: var(--ink); }
+@media (max-width: 560px) {
+  .tg-float { bottom: 16px; right: 16px; width: 52px; height: 52px; }
+  .tg-float svg { width: 22px; height: 22px; }
+}
