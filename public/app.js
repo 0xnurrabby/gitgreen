@@ -88,6 +88,7 @@
     renderMe();
     try {
       await Promise.all([loadStats(), loadAccounts(), loadCatalog(), loadProjects(), loadPlans(), loadLogs(), loadSettings(), loadSubscription()]);
+      await refreshPushAll();
     } catch (e) {
       console.error('Failed to load dashboard data', e);
     }
@@ -501,6 +502,23 @@
       });
       if (prev2) sel2.value = prev2;
     }
+    // Keep the push-all account selector in sync.
+    const sel3 = $('#push-account');
+    if (sel3) {
+      const prev3 = sel3.value;
+      sel3.innerHTML = '';
+      const allOpt3 = document.createElement('option');
+      allOpt3.value = '';
+      allOpt3.textContent = 'Select an account';
+      sel3.appendChild(allOpt3);
+      (state.accounts || []).forEach((a) => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = '@' + a.github_username + (a.is_active ? '' : ' (paused)');
+        sel3.appendChild(opt);
+      });
+      if (prev3 && (state.accounts || []).some((a) => String(a.id) === prev3)) sel3.value = prev3;
+    }
   }
   function renderProjectRepos() {
     const box = $('#project-repos');
@@ -573,6 +591,75 @@
     state.projects = await api('/api/projects');
     renderProjects();
     renderProjectRepos();
+  }
+
+  // ---------- Push all repositories ----------
+  let pushRunning = false;
+  async function refreshPushAll() {
+    const acc = $('#push-account') ? $('#push-account').value : '';
+    const box = $('#push-results');
+    const bar = $('#push-bar-fill');
+    const label = $('#push-progress-label');
+    const nums = $('#push-progress-nums');
+    const count = $('#nav-pushall-count');
+    // Sidebar badge: total pushed across all accounts.
+    try {
+      const st = await api('/api/push-all/status' + (acc ? '?accountId=' + encodeURIComponent(acc) : ''));
+      if (acc) {
+        const pct = st.total ? Math.round((st.pushed / st.total) * 100) : 0;
+        if (bar) bar.style.width = pct + '%';
+        if (label) label.textContent = acc === '' ? 'Select an account to begin.' : `Pushed ${st.pushed} of ${st.total} ready-made projects to @${st.account}`;
+        if (nums) nums.textContent = st.remaining ? st.remaining + ' left' : 'all pushed';
+        if (st.done === false && count) count.textContent = st.pushed;
+        if (st.remaining === 0 && !st.inFlight) {
+          if (box.querySelector('.push-done-item')) box.innerHTML = '';
+        }
+      } else {
+        if (label) label.textContent = 'Select an account to begin.';
+        if (nums) nums.textContent = '';
+        if (bar) bar.style.width = '0%';
+      }
+      if (count) count.textContent = st.total >= 0 ? st.pushed : '';
+    } catch (e) { /* ignore */ }
+  }
+
+  async function runPushAll() {
+    const acc = $('#push-account') ? $('#push-account').value : '';
+    if (!acc) { toast('Select a GitHub account first.', true); return; }
+    if (pushRunning) { toast('A push is already running.', true); return; }
+    pushRunning = true;
+    const btn = $('#push-all-btn');
+    const box = $('#push-results');
+    if (btn) btn.disabled = true;
+    let pushedCount = 0;
+    try {
+      // Keep pushing batches until nothing is left.
+      for (let pass = 0; pass < 200; pass++) {
+        const r = await api('/api/push-all', { method: 'POST', body: { accountId: Number(acc), batch: 6 } });
+        pushedCount = r.pushed || 0;
+        if (r.results) {
+          r.results.forEach((x) => {
+            const row = document.createElement('div');
+            row.className = 'push-row ' + (x.status === 'failed' ? 'fail' : 'ok');
+            row.innerHTML = `<span class="push-row-name">${esc(x.slug)}</span><span class="push-row-state">${x.status === 'failed' ? (escapeHtml(x.error || 'failed')) : x.status}</span>`;
+            box.prepend(row);
+          });
+        }
+        await refreshPushAll();
+        if (r.done || r.remaining <= 0) break;
+      }
+      toast('Repository batch pushed.');
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      pushRunning = false;
+      if (btn) btn.disabled = false;
+      await refreshPushAll();
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
   // ---------- Plans ----------
@@ -1067,6 +1154,8 @@
     await loadProjects();
   });
   $('#plans-account').addEventListener('change', async () => { await loadPlans(); });
+  $('#push-account').addEventListener('change', async () => { await refreshPushAll(); });
+  $('#push-all-btn').addEventListener('click', async () => { await runPushAll(); });
 
   // ---------- Auth page visual ----------
   // Animated contribution grid + activity timeline on the sign-in screen.

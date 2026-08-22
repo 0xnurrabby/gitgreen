@@ -712,3 +712,20 @@ a.logo-row:hover { text-decoration: none; }
   .tg-float { bottom: 16px; right: 16px; width: 52px; height: 52px; }
   .tg-float svg { width: 22px; height: 22px; }
 }
+
+/* Push-all repositories */
+.push-progress { margin-bottom: 18px; }
+.push-progress-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.push-bar { height: 10px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); overflow: hidden; }
+.push-bar span { display: block; height: 100%; width: 0; background: var(--green); border-radius: 999px; transition: width .3s ease; }
+.push-note { font-size: 13px; margin: 4px 0 16px; }
+.push-results { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; }
+.push-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg-2); font-family: var(--mono); font-size: 12.5px;
+}
+.push-row .push-row-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.push-row .push-row-state { color: var(--green); font-weight: 700; white-space: nowrap; }
+.push-row.fail { border-color: rgba(209,36,91,.3); }
+.push-row.fail .push-row-state { color: var(--red); }

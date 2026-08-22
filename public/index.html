@@ -67,6 +67,7 @@
         <a class="nav-link active" data-view="dashboard"><span class="ic">◈</span> Dashboard</a>
         <a class="nav-link" data-view="accounts"><span class="ic">◆</span> Accounts</a>
         <a class="nav-link" data-view="projects"><span class="ic">▤</span> Projects <span class="pill" id="nav-projects-count"></span></a>
+        <a class="nav-link" data-view="pushall"><span class="ic">⇪</span> Push all <span class="pill" id="nav-pushall-count"></span></a>
         <a class="nav-link" data-view="plans"><span class="ic">◷</span> Plans</a>
         <a class="nav-link" data-view="logs"><span class="ic">▥</span> Activity</a>
         <a class="nav-link" data-view="plan"><span class="ic">♖</span> Subscription <span class="pill" id="nav-plan-name">Free</span></a>
@@ -181,6 +182,34 @@
         <div class="filter-row" id="proj-filters"></div>
         <div id="projects-grid" class="projects-grid"></div>
         <div id="project-repos"></div>
+      </section>
+
+      <!-- Push all repositories -->
+      <section class="view" id="view-pushall">
+        <header class="view-head">
+          <div>
+            <p class="kicker">Bulk push</p>
+            <h2>Push all repositories</h2>
+          </div>
+          <div class="head-actions">
+            <select id="push-account" class="select" title="Choose a GitHub account"></select>
+            <button class="btn btn-primary" id="push-all-btn">Push all repos</button>
+          </div>
+        </header>
+
+        <div class="panel">
+          <div class="push-progress">
+            <div class="push-progress-head">
+              <span class="muted" id="push-progress-label">Select an account to begin.</span>
+              <span class="muted" id="push-progress-nums"></span>
+            </div>
+            <div class="push-bar"><span id="push-bar-fill"></span></div>
+          </div>
+          <div class="push-note muted">
+            Pushes every ready-made project that is not yet on the selected GitHub account. The autopilot keeps evolving these repos on its own after the initial push.
+          </div>
+          <div id="push-results" class="push-results"></div>
+        </div>
       </section>
 
       <!-- Plans -->

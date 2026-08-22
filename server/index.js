@@ -25,6 +25,8 @@ async function main() {
   const persist = require('./persist');
   const billing = require('./billing');
   const CATALOG = require('../content/catalog');
+  // Accounts currently being bulk-pushed, to prevent duplicate concurrent runs.
+  const pushAllBusy = new Set();
 
   auth.ensureAdmins();
 
@@ -369,6 +371,88 @@ async function main() {
       ? db.prepare('SELECT * FROM projects WHERE user_id = ? AND account_id = ? ORDER BY pushed_at DESC, id DESC LIMIT 400').all(req.user.id, accountId) || []
       : db.prepare('SELECT * FROM projects WHERE user_id = ? ORDER BY pushed_at DESC, id DESC LIMIT 400').all(req.user.id) || [];
     res.json(rows);
+  });
+
+  // ---------- Push all repos ----------
+  // One-click bulk push: every catalog project that is not yet on the selected
+  // account is created and pushed. This bypasses the daily autopilot pacing
+  // (which spreads repos across days) so the user can build up a library in one
+  // go when they want to. Once done, the account keeps evolving normally.
+  app.get('/api/push-all/status', requireUser, (req, res) => {
+    const accountId = Number(req.query.accountId) || null;
+    const total = CATALOG.length;
+    if (!accountId) return res.json({ total, pushed: 0, remaining: total, account: null });
+    const account = db.prepare('SELECT * FROM accounts WHERE id = ? AND user_id = ?').get(accountId, req.user.id);
+    if (!account) return res.status(404).json({ error: 'account not found' });
+    const pushed = db.prepare('SELECT COUNT(*) AS n FROM projects WHERE user_id = ? AND account_id = ?').get(req.user.id, account.id).n || 0;
+    res.json({
+      total,
+      pushed,
+      remaining: Math.max(0, total - pushed),
+      account: account.github_username,
+      inFlight: pushAllBusy.has(account.id)
+    });
+  });
+
+  // Push the next batch (up to `batch`, default 6) of catalog projects that are
+  // not yet on the selected account. Returns progress + per-repo results.
+  app.post('/api/push-all', requireUser, async (req, res) => {
+    const accountId = Number(req.body?.accountId) || null;
+    const batch = Math.max(1, Math.min(10, Number(req.body?.batch) || 6));
+    const account = accountId
+      ? db.prepare('SELECT * FROM accounts WHERE id = ? AND user_id = ?').get(accountId, req.user.id)
+      : null;
+    if (!account || !accountId) return res.status(404).json({ error: 'account not found' });
+    if (pushAllBusy.has(account.id)) return res.status(409).json({ error: 'A push is already running for this account.' });
+
+    const token = (() => { try { return decrypt(account.token_enc); } catch (e) { return null; } })();
+    if (!token) return res.status(400).json({ error: 'this account has no usable token' });
+
+    // Which catalog projects already exist for this account.
+    const pushedSlugs = new Set(
+      (db.prepare('SELECT slug FROM projects WHERE user_id = ? AND account_id = ?').all(req.user.id, account.id) || []).map((r) => r.slug)
+    );
+    const remaining = CATALOG.filter((c) => !pushedSlugs.has(c.slug)).slice(0, batch);
+    if (remaining.length === 0) {
+      const total = CATALOG.length;
+      const pushed = pushedSlugs.size;
+      return res.json({ ok: true, done: true, pushed, remaining: Math.max(0, total - pushed), total });
+    }
+
+    pushAllBusy.add(account.id);
+    const results = [];
+    try {
+      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+      for (const cat of remaining) {
+        try {
+          // Skip repos that already exist on GitHub under this account but were
+          // not recorded locally (rare duplicate-safety).
+          if (await github.repoExists(token, account.github_username, cat.slug)) {
+            // Record it so the count advances without re-creating it.
+            const info = db.prepare(`
+              INSERT INTO projects (user_id, account_id, slug, title, category, stack, description, status, repo_name, repo_url, default_branch, commits_done, evo_index, work_dir, created_at, pushed_at)
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+              ON CONFLICT DO NOTHING
+            `).run(req.user.id, account.id, cat.slug, cat.title, cat.category, cat.stack, cat.blurb,
+              'pushed', cat.slug, `https://github.com/${account.github_username}/${cat.slug}`, 'main', 1, 0, null, auth.now(), auth.now());
+            results.push({ slug: cat.slug, status: 'recorded' });
+            continue;
+          }
+          await projects.createProject(user, account, cat, new Date());
+          results.push({ slug: cat.slug, status: 'pushed' });
+        } catch (err) {
+          results.push({ slug: cat.slug, status: 'failed', error: String(err.message).slice(0, 200) });
+        }
+        // Small delay so a big batch still looks human and doesn't hammer the API.
+        await new Promise((r) => setTimeout(r, 350));
+      }
+    } finally {
+      pushAllBusy.delete(account.id);
+    }
+
+    const pushedNow = db.prepare('SELECT COUNT(*) AS n FROM projects WHERE user_id = ? AND account_id = ?').get(req.user.id, account.id).n || 0;
+    const total = CATALOG.length;
+    res.json({ ok: true, done: false, pushed: pushedNow, remaining: Math.max(0, total - pushedNow), total, results });
   });
 
   // ---------- Stats & logs ----------
