@@ -624,11 +624,13 @@
     if (!acc) { toast('Select a GitHub account first.', true); return; }
     if (pushRunning) { toast('A push is already running.', true); return; }
     pushRunning = true;
+    vouchStart();
     const btn = $('#push-all-btn');
     const box = $('#push-results');
     const label = $('#push-progress-label');
     if (btn) { btn.disabled = true; btn.textContent = 'Pushing\u2026'; }
     startPushPolling();
+    let vouchTriggered = false;
     try {
       for (let pass = 0; pass < 400; pass++) {
         const r = await api('/api/push-all', { method: 'POST', body: { accountId: Number(acc), batch: 30 } });
@@ -640,8 +642,10 @@
             box.prepend(row);
           });
         }
+        // Ask for a vouch every 100 repos or on a rate-limit stop.
+        const pushed = Number(r.pushed || 0);
+        if ((!vouchTriggered && pushed >= 100) || r.rateLimited) { vouchShowModal(); vouchTriggered = true; }
         await refreshPushAll();
-        // GitHub temporarily blocked repo creation: stop and tell the user.
         if (r.rateLimited) {
           if (label) label.textContent = r.rateLimitMessage || 'GitHub rate-limited us. Wait a moment and resume.';
           toast(r.rateLimitMessage || 'Rate limited by GitHub. Try again shortly.', true);
@@ -671,6 +675,91 @@
 
   function escapeHtml(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // ---------- Vouch prompt (fair-trade Twitter shoutout) ----------
+  const VOUCH_TEXT = 'Hey @commonsmade, vouch @nurw3b \n\nI just bulk-pushed my whole repo library with GitGreen (free & open source). If you build on GitHub too, it keeps your grid green automatically. The trade is fair: I use it free, so I vouch for it. \n\n#GitGreen #OpenSource #GitHub';
+  const VOUCH_CAMPAIGN_HOURS = 48;
+  const VOUCH_SNOOZE_KEY = 'gg_vouch_hidden_until';
+  const VOUCH_UNTIL_KEY = 'gg_vouch_until';
+  const VOUCH_PUSH_COUNT_KEY = 'gg_vouch_push_count';
+
+  function vouchCampaignActive() {
+    try {
+      const until = Number(localStorage.getItem(VOUCH_UNTIL_KEY) || 0);
+      return until > Date.now();
+    } catch (e) { return false; }
+  }
+  function vouchStart() {
+    try {
+      if (!localStorage.getItem(VOUCH_UNTIL_KEY)) {
+        localStorage.setItem(VOUCH_UNTIL_KEY, String(Date.now() + VOUCH_CAMPAIGN_HOURS * 3600000));
+      }
+    } catch (e) {}
+  }
+  function vouchExpire() {
+    try {
+      localStorage.removeItem(VOUCH_UNTIL_KEY);
+      localStorage.removeItem(VOUCH_SNOOZE_KEY);
+      localStorage.removeItem(VOUCH_PUSH_COUNT_KEY);
+    } catch (e) {}
+  }
+  function vouchSnoozed() {
+    try {
+      const until = Number(localStorage.getItem(VOUCH_SNOOZE_KEY) || 0);
+      return until > Date.now();
+    } catch (e) { return false; }
+  }
+  function vouchSnooze() {
+    try { localStorage.setItem(VOUCH_SNOOZE_KEY, String(Date.now() + 3600000)); } catch (e) {}
+  }
+  function vouchBumpPushCount() {
+    try {
+      const n = Number(localStorage.getItem(VOUCH_PUSH_COUNT_KEY) || 0) + 1;
+      localStorage.setItem(VOUCH_PUSH_COUNT_KEY, String(n));
+      return n;
+    } catch (e) { return 0; }
+  }
+  function vouchShowModal() {
+    if (!vouchCampaignActive()) return;
+    if (vouchSnoozed()) return;
+    $('#vouch-modal').classList.remove('hidden');
+  }
+  function vouchHideModal() { $('#vouch-modal').classList.add('hidden'); }
+  function vouchBindCopy(btn, textEl) {
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      const text = textEl ? textEl.textContent : VOUCH_TEXT;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (e2) {}
+        document.body.removeChild(ta);
+      }
+      toast('Tweet copied. Paste it on X and hit post!');
+    });
+  }
+  function vouchSetup() {
+    // Show the fixed card while the campaign is active and not snoozed.
+    const card = $('#vouch-card');
+    if (!card) return;
+    if (!vouchCampaignActive()) { vouchExpire(); card.classList.remove('show'); return; }
+    if (vouchSnoozed()) { card.classList.remove('show'); return; }
+    card.classList.add('show');
+    // Wire the pop-up.
+    $('#vouch-close').addEventListener('click', () => {
+      vouchSnooze();
+      vouchHideModal();
+      card.classList.remove('show');
+    });
+    vouchBindCopy($('#vouch-copy'), $('#vouch-text'));
+    vouchBindCopy($('#vouch-card-copy'), null);
+    const tweet = $('#vouch-tweet');
+    if (tweet) tweet.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(VOUCH_TEXT);
+    // If there is no auth screen yet, this modal/dup would be hidden; guard clicks.
+    $('#vouch-modal').addEventListener('click', (e) => { if (e.target === $('#vouch-modal')) vouchSnooze(); });
   }
 
   // ---------- Plans ----------
@@ -1278,5 +1367,6 @@
     } catch (e) {
       showAuth();
     }
+    vouchSetup();
   })();
 })();

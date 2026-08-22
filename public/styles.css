@@ -729,3 +729,72 @@ a.logo-row:hover { text-decoration: none; }
 .push-row .push-row-state { color: var(--green); font-weight: 700; white-space: nowrap; }
 .push-row.fail { border-color: rgba(209,36,91,.3); }
 .push-row.fail .push-row-state { color: var(--red); }
+
+/* Vouch prompt */
+.vouch-modal {
+  position: fixed; inset: 0; z-index: 1100; display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(10,12,16,.55); backdrop-filter: blur(4px);
+  animation: vouchFade .25s ease;
+}
+.vouch-popup {
+  position: relative; width: 100%; max-width: 430px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 20px; padding: 30px 28px 24px;
+  box-shadow: var(--shadow-lg); text-align: center;
+  animation: vouchPop .35s cubic-bezier(.2,.8,.3,1.2);
+}
+.vouch-close {
+  position: absolute; top: 12px; right: 14px; width: 32px; height: 32px;
+  border: none; border-radius: 50%; background: var(--bg-2); color: var(--dim);
+  font-size: 20px; line-height: 1; cursor: pointer; transition: background .15s, color .15s;
+}
+.vouch-close:hover { background: var(--line); color: var(--ink); }
+.vouch-ic {
+  width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%;
+  display: grid; place-items: center; color: #fff; background: #1d9bf0;
+  box-shadow: 0 8px 22px rgba(29,155,240,.35);
+}
+.vouch-popup h3 { font-family: var(--display); font-size: 22px; margin-bottom: 8px; }
+.vouch-popup p { color: var(--muted); font-size: 14.5px; margin-bottom: 16px; }
+.vouch-text {
+  font-family: var(--mono); font-size: 14px; background: var(--bg-2);
+  border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px;
+  color: var(--ink); text-align: left; word-break: break-word; margin-bottom: 16px;
+}
+.vouch-actions { display: flex; gap: 10px; }
+.vouch-actions .btn { flex: 1; }
+.vouch-done {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  margin-top: 14px; font-size: 12.5px; color: var(--dim); cursor: pointer;
+}
+
+/* Fixed vouch card */
+.vouch-card {
+  position: fixed; bottom: 22px; left: 22px; z-index: 999; max-width: 320px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  box-shadow: var(--shadow); overflow: hidden;
+  opacity: 0; transform: translateY(14px); pointer-events: none;
+  transition: opacity .35s ease, transform .35s ease;
+}
+.vouch-card.show { opacity: 1; transform: translateY(0); pointer-events: auto; animation: vouchCue 3.2s ease-in-out infinite; }
+.vouch-card::before {
+  content: ''; position: absolute; left: 0; inset: 0 auto 0 0; width: 3px; background: #1d9bf0;
+}
+.vouch-card-inner { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+.vouch-card-ic {
+  width: 38px; height: 38px; min-width: 38px; border-radius: 50%;
+  display: grid; place-items: center; color: #fff; background: #1d9bf0;
+}
+.vouch-card-copy { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.vouch-card-copy strong { font-size: 13.5px; }
+.vouch-card-copy span { font-size: 12px; color: var(--muted); }
+.vouch-card .btn { flex-shrink: 0; }
+@keyframes vouchCue {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes vouchFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes vouchPop { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+@media (max-width: 560px) {
+  .vouch-card { left: 12px; right: 12px; max-width: none; bottom: 84px; }
+  .vouch-card .btn { white-space: nowrap; }
+}
