@@ -742,6 +742,9 @@
     });
   }
   function vouchSetup() {
+    // Start the campaign now if it has not started yet, so the fixed card is
+    // visible immediately (and stays for 48h, then auto-clears).
+    vouchStart();
     // Show the fixed card while the campaign is active and not snoozed.
     const card = $('#vouch-card');
     if (!card) return;
