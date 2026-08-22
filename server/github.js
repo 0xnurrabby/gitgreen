@@ -5,6 +5,25 @@ const fs = require('fs');
 
 const API = process.env.GITHUB_API_URL || 'https://api.github.com';
 
+// GitHub returns 403 with a "secondary rate limit" message when we create repos
+// or write too fast. Detect it so callers can back off instead of retrying in a
+// tight loop (which lengthens the temporary block).
+function isRateLimited(err) {
+  if (!err) return false;
+  const msg = String(err.message || err);
+  return err.status === 403 || err.status === 429 || /secondary rate limit|abuse|rate limit/i.test(msg);
+}
+
+// Human-friendly explanation for the wait (GitHub's blocks are usually short).
+function rateLimitHint(err) {
+  const reset = err && err.status ? null : null;
+  if (err && err.headers && err.headers['x-ratelimit-reset']) {
+    const secs = Number(err.headers['x-ratelimit-reset']) - Math.floor(Date.now() / 1000);
+    if (secs > 0) return `GitHub is rate-limiting us. Retry in about ${Math.max(5, Math.round(secs / 60))} minute(s).`;
+  }
+  return 'GitHub temporarily blocked repo creation (secondary rate limit). Wait a couple of minutes and try again.';
+}
+
 async function gh(pathname, token, options = {}) {
   const res = await fetch(`${API}${pathname}`, {
     method: options.method || 'GET',
@@ -23,6 +42,7 @@ async function gh(pathname, token, options = {}) {
     const msg = (data.message && (Array.isArray(data.errors) ? data.message + ' ' + data.errors.map(e => e.message).join('; ') : data.message)) || `HTTP ${res.status}`;
     const err = new Error(msg);
     err.status = res.status;
+    err.headers = Object.fromEntries(res.headers.entries());
     throw err;
   }
   return data;
@@ -184,4 +204,4 @@ async function ensureClone({ token, owner, repoName, dir, branch = 'main' }) {
   } catch (e) { /* branch may already be checked out */ }
 }
 
-module.exports = { gh, getUser, checkToken, createRepo, repoExists, pushToGitHub, projectWorkDir, ensureClone, friendlyGitError };
+module.exports = { gh, getUser, checkToken, createRepo, repoExists, pushToGitHub, projectWorkDir, ensureClone, friendlyGitError, isRateLimited, rateLimitHint };

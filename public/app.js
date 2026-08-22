@@ -595,6 +595,7 @@
 
   // ---------- Push all repositories ----------
   let pushRunning = false;
+  let pushPollTimer = null;
   async function refreshPushAll() {
     const acc = $('#push-account') ? $('#push-account').value : '';
     const box = $('#push-results');
@@ -602,7 +603,6 @@
     const label = $('#push-progress-label');
     const nums = $('#push-progress-nums');
     const count = $('#nav-pushall-count');
-    // Sidebar badge: total pushed across all accounts.
     try {
       const st = await api('/api/push-all/status' + (acc ? '?accountId=' + encodeURIComponent(acc) : ''));
       if (acc) {
@@ -610,12 +610,8 @@
         if (bar) bar.style.width = pct + '%';
         if (label) label.textContent = acc === '' ? 'Select an account to begin.' : `Pushed ${st.pushed} of ${st.total} ready-made projects to @${st.account}`;
         if (nums) nums.textContent = st.remaining ? st.remaining + ' left' : 'all pushed';
-        if (st.done === false && count) count.textContent = st.pushed;
-        if (st.remaining === 0 && !st.inFlight) {
-          if (box.querySelector('.push-done-item')) box.innerHTML = '';
-        }
       } else {
-        if (label) label.textContent = 'Select an account to begin.';
+        if (label && box) label.textContent = 'Select an account to begin.';
         if (nums) nums.textContent = '';
         if (bar) bar.style.width = '0%';
       }
@@ -630,13 +626,12 @@
     pushRunning = true;
     const btn = $('#push-all-btn');
     const box = $('#push-results');
-    if (btn) btn.disabled = true;
-    let pushedCount = 0;
+    const label = $('#push-progress-label');
+    if (btn) { btn.disabled = true; btn.textContent = 'Pushing\u2026'; }
+    startPushPolling();
     try {
-      // Keep pushing batches until nothing is left.
-      for (let pass = 0; pass < 200; pass++) {
+      for (let pass = 0; pass < 400; pass++) {
         const r = await api('/api/push-all', { method: 'POST', body: { accountId: Number(acc), batch: 30 } });
-        pushedCount = r.pushed || 0;
         if (r.results) {
           r.results.forEach((x) => {
             const row = document.createElement('div');
@@ -646,16 +641,32 @@
           });
         }
         await refreshPushAll();
+        // GitHub temporarily blocked repo creation: stop and tell the user.
+        if (r.rateLimited) {
+          if (label) label.textContent = r.rateLimitMessage || 'GitHub rate-limited us. Wait a moment and resume.';
+          toast(r.rateLimitMessage || 'Rate limited by GitHub. Try again shortly.', true);
+          break;
+        }
         if (r.done || r.remaining <= 0) break;
       }
-      toast('Repository batch pushed.');
+      await refreshPushAll();
     } catch (e) {
       toast(e.message, true);
     } finally {
       pushRunning = false;
-      if (btn) btn.disabled = false;
+      stopPushPolling();
+      if (btn) { btn.disabled = false; btn.textContent = 'Push all repos'; }
       await refreshPushAll();
     }
+  }
+
+  // Auto-refresh the progress bar/label while a push is in flight.
+  function startPushPolling() {
+    stopPushPolling();
+    pushPollTimer = setInterval(() => { refreshPushAll(); }, 2000);
+  }
+  function stopPushPolling() {
+    if (pushPollTimer) { clearInterval(pushPollTimer); pushPollTimer = null; }
   }
 
   function escapeHtml(s) {

@@ -421,20 +421,22 @@ async function main() {
 
     pushAllBusy.add(account.id);
     const results = [];
+    let rateLimited = false;
+    let rateLimitMessage = null;
     try {
       const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
 
-      // Push a handful of repos concurrently (respecting GitHub's unauthenticated
-      // API budget) so a large library fills quickly without tripping rate limits.
-      const CONCURRENCY = 3;
+      // Push a few repos concurrently (respecting GitHub's secondary rate limit
+      // on repo creation, which is strict). If a limit is hit we stop the whole
+      // batch cleanly and tell the user to wait rather than spamming failures.
+      const CONCURRENCY = 2;
       const queue = [...remaining];
+      let stopped = false;
       async function worker() {
-        while (queue.length) {
+        while (queue.length && !stopped) {
           const cat = queue.shift();
           if (!cat) break;
           try {
-            // Skip repos that already exist on GitHub under this account but were
-            // not recorded locally (rare duplicate-safety).
             if (await github.repoExists(token, account.github_username, cat.slug)) {
               db.prepare(`
                 INSERT INTO projects (user_id, account_id, slug, title, category, stack, description, status, repo_name, repo_url, default_branch, commits_done, evo_index, work_dir, created_at, pushed_at)
@@ -448,11 +450,16 @@ async function main() {
             await projects.createProject(user, account, cat, new Date());
             results.push({ slug: cat.slug, status: 'pushed' });
           } catch (err) {
+            if (github.isRateLimited(err)) {
+              rateLimited = true;
+              rateLimitMessage = github.rateLimitHint(err);
+              stopped = true;
+              break;
+            }
             results.push({ slug: cat.slug, status: 'failed', error: String(err.message).slice(0, 200) });
           }
-          // A tiny gap so concurrent pushes don't hit GitHub's repo-creation
-          // secondary rate limit all at once.
-          await new Promise((r) => setTimeout(r, 80));
+          // Gentle gap between concurrent creates to avoid tripping the limit.
+          await new Promise((r) => setTimeout(r, 200));
         }
       }
       await Promise.all(Array.from({ length: Math.min(CONCURRENCY, remaining.length) }, worker));
@@ -462,7 +469,7 @@ async function main() {
 
     const pushedNow = db.prepare('SELECT COUNT(*) AS n FROM projects WHERE user_id = ? AND account_id = ?').get(req.user.id, account.id).n || 0;
     const total = CATALOG.length;
-    res.json({ ok: true, done: false, pushed: pushedNow, remaining: Math.max(0, total - pushedNow), total, results });
+    res.json({ ok: true, done: false, pushed: pushedNow, remaining: Math.max(0, total - pushedNow), total, results, rateLimited, rateLimitMessage });
   });
 
   // ---------- Stats & logs ----------
