@@ -635,7 +635,7 @@
     try {
       // Keep pushing batches until nothing is left.
       for (let pass = 0; pass < 200; pass++) {
-        const r = await api('/api/push-all', { method: 'POST', body: { accountId: Number(acc), batch: 6 } });
+        const r = await api('/api/push-all', { method: 'POST', body: { accountId: Number(acc), batch: 30 } });
         pushedCount = r.pushed || 0;
         if (r.results) {
           r.results.forEach((x) => {

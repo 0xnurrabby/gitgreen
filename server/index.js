@@ -398,7 +398,7 @@ async function main() {
   // not yet on the selected account. Returns progress + per-repo results.
   app.post('/api/push-all', requireUser, async (req, res) => {
     const accountId = Number(req.body?.accountId) || null;
-    const batch = Math.max(1, Math.min(10, Number(req.body?.batch) || 6));
+    const batch = Math.max(1, Math.min(50, Number(req.body?.batch) || 30));
     const account = accountId
       ? db.prepare('SELECT * FROM accounts WHERE id = ? AND user_id = ?').get(accountId, req.user.id)
       : null;
@@ -423,29 +423,39 @@ async function main() {
     const results = [];
     try {
       const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
-      for (const cat of remaining) {
-        try {
-          // Skip repos that already exist on GitHub under this account but were
-          // not recorded locally (rare duplicate-safety).
-          if (await github.repoExists(token, account.github_username, cat.slug)) {
-            // Record it so the count advances without re-creating it.
-            const info = db.prepare(`
-              INSERT INTO projects (user_id, account_id, slug, title, category, stack, description, status, repo_name, repo_url, default_branch, commits_done, evo_index, work_dir, created_at, pushed_at)
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-              ON CONFLICT DO NOTHING
-            `).run(req.user.id, account.id, cat.slug, cat.title, cat.category, cat.stack, cat.blurb,
-              'pushed', cat.slug, `https://github.com/${account.github_username}/${cat.slug}`, 'main', 1, 0, null, auth.now(), auth.now());
-            results.push({ slug: cat.slug, status: 'recorded' });
-            continue;
+
+      // Push a handful of repos concurrently (respecting GitHub's unauthenticated
+      // API budget) so a large library fills quickly without tripping rate limits.
+      const CONCURRENCY = 3;
+      const queue = [...remaining];
+      async function worker() {
+        while (queue.length) {
+          const cat = queue.shift();
+          if (!cat) break;
+          try {
+            // Skip repos that already exist on GitHub under this account but were
+            // not recorded locally (rare duplicate-safety).
+            if (await github.repoExists(token, account.github_username, cat.slug)) {
+              db.prepare(`
+                INSERT INTO projects (user_id, account_id, slug, title, category, stack, description, status, repo_name, repo_url, default_branch, commits_done, evo_index, work_dir, created_at, pushed_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ON CONFLICT DO NOTHING
+              `).run(req.user.id, account.id, cat.slug, cat.title, cat.category, cat.stack, cat.blurb,
+                'pushed', cat.slug, `https://github.com/${account.github_username}/${cat.slug}`, 'main', 1, 0, null, auth.now(), auth.now());
+              results.push({ slug: cat.slug, status: 'recorded' });
+              continue;
+            }
+            await projects.createProject(user, account, cat, new Date());
+            results.push({ slug: cat.slug, status: 'pushed' });
+          } catch (err) {
+            results.push({ slug: cat.slug, status: 'failed', error: String(err.message).slice(0, 200) });
           }
-          await projects.createProject(user, account, cat, new Date());
-          results.push({ slug: cat.slug, status: 'pushed' });
-        } catch (err) {
-          results.push({ slug: cat.slug, status: 'failed', error: String(err.message).slice(0, 200) });
+          // A tiny gap so concurrent pushes don't hit GitHub's repo-creation
+          // secondary rate limit all at once.
+          await new Promise((r) => setTimeout(r, 80));
         }
-        // Small delay so a big batch still looks human and doesn't hammer the API.
-        await new Promise((r) => setTimeout(r, 350));
       }
+      await Promise.all(Array.from({ length: Math.min(CONCURRENCY, remaining.length) }, worker));
     } finally {
       pushAllBusy.delete(account.id);
     }
