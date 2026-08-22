@@ -354,6 +354,7 @@
           <div class="account-meta">connected ${new Date(a.created_at).toLocaleDateString()} · ${healthBadge}</div>
           <div class="account-actions">
             <button class="btn btn-ghost" data-toggle="${a.id}">${a.is_active ? 'Pause' : 'Resume'}</button>
+            <button class="btn btn-ghost" data-push="${a.id}">Push all</button>
             <button class="btn btn-ghost" data-settings="${a.id}">Settings</button>
             <button class="btn btn-ghost" data-remove="${a.id}" style="color:var(--red)">Remove</button>
           </div>
@@ -369,6 +370,12 @@
     $$('#accounts-list [data-toggle]').forEach((b) => b.addEventListener('click', async () => {
       await api('/api/accounts/' + b.dataset.toggle + '/activate', { method: 'POST', body: { active: b.textContent === 'Resume' } });
       await Promise.all([loadAccounts(), loadStats()]);
+    }));
+    $$('#accounts-list [data-push]').forEach((b) => b.addEventListener('click', async () => {
+      // Push all repos for this specific account, independent of others.
+      const sel = $('#push-account');
+      if (sel) sel.value = b.dataset.push;
+      await runPushAll();
     }));
     $$('#accounts-list [data-settings]').forEach((b) => b.addEventListener('click', () => toggleAccountSettings(b.dataset.settings)));
     $$('#accounts-list [data-remove]').forEach((b) => b.addEventListener('click', async () => {
@@ -596,6 +603,8 @@
   // ---------- Push all repositories ----------
   let pushRunning = false;
   let pushPollTimer = null;
+  // Track in-flight pushes per account so different accounts can push at once.
+  const pushingAccounts = new Set();
   async function refreshPushAll() {
     const acc = $('#push-account') ? $('#push-account').value : '';
     const box = $('#push-results');
@@ -622,7 +631,8 @@
   async function runPushAll() {
     const acc = $('#push-account') ? $('#push-account').value : '';
     if (!acc) { toast('Select a GitHub account first.', true); return; }
-    if (pushRunning) { toast('A push is already running.', true); return; }
+    if (pushingAccounts.has(acc)) { toast('This account is already pushing.', true); return; }
+    pushingAccounts.add(acc);
     pushRunning = true;
     vouchStart();
     const btn = $('#push-all-btn');
@@ -657,8 +667,9 @@
     } catch (e) {
       toast(e.message, true);
     } finally {
-      pushRunning = false;
-      stopPushPolling();
+      pushingAccounts.delete(acc);
+      pushRunning = pushingAccounts.size > 0;
+      if (pushingAccounts.size === 0) stopPushPolling();
       if (btn) { btn.disabled = false; btn.textContent = 'Push all repos'; }
       await refreshPushAll();
     }
