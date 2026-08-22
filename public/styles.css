@@ -793,8 +793,8 @@ a.logo-row:hover { text-decoration: none; }
   display: grid; place-items: center; color: #fff; background: #d1245b;
 }
 .vouch-card-copy { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-.vouch-card-copy strong { font-size: 14px; color: #d1245b; }
-.vouch-card-copy span { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vouch-card-copy strong { font-size: 14px; color: #d1245b; line-height: 1.3; }
+.vouch-card-copy span { font-size: 12.5px; color: var(--muted); line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .vouch-card .btn { flex-shrink: 0; }
 @keyframes vouchCue {
   0%, 100% { transform: translateY(0) scale(1); }
