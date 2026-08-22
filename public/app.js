@@ -678,7 +678,9 @@
   }
 
   // ---------- Vouch prompt (fair-trade Twitter shoutout) ----------
-  const VOUCH_TEXT = 'Hey @commonsmade, vouch @nurw3b \n\nI just bulk-pushed my whole repo library with GitGreen (free & open source). If you build on GitHub too, it keeps your grid green automatically. The trade is fair: I use it free, so I vouch for it. \n\n#GitGreen #OpenSource #GitHub';
+  const VOUCH_LINE = 'Hey @commonsmade, vouch @nurw3b';
+  const VOUCH_BODY = 'I am using GitGreen to keep my GitHub green on autopilot, and it is free and open source. If you build on GitHub too, give it a try. I got free value from it, so I am paying it forward.';
+  const VOUCH_TWEET = VOUCH_LINE + '\n\n' + VOUCH_BODY + '\n\n#GitGreen #OpenSource #GitHub';
   const VOUCH_CAMPAIGN_HOURS = 48;
   const VOUCH_SNOOZE_KEY = 'gg_vouch_hidden_until';
   const VOUCH_UNTIL_KEY = 'gg_vouch_until';
@@ -729,7 +731,8 @@
   function vouchBindCopy(btn, textEl) {
     if (!btn) return;
     btn.addEventListener('click', async () => {
-      const text = textEl ? textEl.textContent : VOUCH_TEXT;
+      // Copy only the shoutout line; the body text lives on the card.
+      const text = VOUCH_LINE;
       try {
         await navigator.clipboard.writeText(text);
       } catch (e) {
@@ -738,7 +741,7 @@
         try { document.execCommand('copy'); } catch (e2) {}
         document.body.removeChild(ta);
       }
-      toast('Tweet copied. Paste it on X and hit post!');
+      toast('Copied @commonsmade @nurw3b. Paste it on X!');
     });
   }
   function vouchSetup() {
@@ -760,7 +763,7 @@
     vouchBindCopy($('#vouch-copy'), $('#vouch-text'));
     vouchBindCopy($('#vouch-card-copy'), null);
     const tweet = $('#vouch-tweet');
-    if (tweet) tweet.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(VOUCH_TEXT);
+    if (tweet) tweet.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(VOUCH_TWEET);
     // If there is no auth screen yet, this modal/dup would be hidden; guard clicks.
     $('#vouch-modal').addEventListener('click', (e) => { if (e.target === $('#vouch-modal')) vouchSnooze(); });
   }
